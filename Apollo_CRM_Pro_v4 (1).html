@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Apollo CRM">
+<meta name="theme-color" content="#060f1e">
+<title>Apollo CRM Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg0:#060f1e;--bg1:#0b1a2e;--bg2:#0f2240;--bg3:#162d54;
+  --ln:rgba(255,255,255,.08);--ln2:rgba(255,255,255,.15);
+  --cy:#00d4ff;--cy2:rgba(0,212,255,.12);--cy3:rgba(0,212,255,.06);
+  --gr:#22d3a4;--gr2:rgba(34,211,164,.12);
+  --gd:#ffb703;--gd2:rgba(255,183,3,.12);
+  --rd:#ff4d6d;--rd2:rgba(255,77,109,.1);
+  --wm:#ff8c42;--wm2:rgba(255,140,66,.12);
+  --pu:#a855f7;--pu2:rgba(168,85,247,.12);
+  --tx:#e8f1ff;--tx2:#8a9bbf;--tx3:#506080;
+  --r:12px;--r2:8px;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg0)}
+#root{height:100%;display:flex;flex-direction:column}
+body{font-family:'Be Vietnam Pro',sans-serif;color:var(--tx);font-size:14px}
+
+/* ═══ LOGIN ═══ */
+#loginPage{
+  position:fixed;inset:0;z-index:999;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg0);padding:16px;overflow-y:auto;
+}
+#loginPage::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(0,212,255,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,.04) 1px,transparent 1px);
+  background-size:32px 32px;
+}
+.lbox{position:relative;z-index:1;width:100%;max-width:360px}
+.l-logo{
+  width:60px;height:60px;border-radius:14px;
+  background:linear-gradient(135deg,var(--cy),#0060d0);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:#fff;
+  margin:0 auto 14px;box-shadow:0 0 28px rgba(0,212,255,.45);
+}
+.l-title{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;letter-spacing:2px;text-align:center;margin-bottom:3px}
+.l-sub{font-size:11px;color:var(--tx3);text-align:center;margin-bottom:22px}
+.l-card{background:var(--bg1);border:1px solid var(--ln2);border-radius:14px;padding:20px}
+.l-err{
+  background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.3);
+  border-radius:8px;padding:9px 12px;font-size:12px;color:var(--rd);
+  margin-bottom:12px;display:none;align-items:center;gap:7px;
+}
+.l-err.show{display:flex}
+.l-accounts{margin-top:14px;border-top:1px solid var(--ln);padding-top:12px}
+.l-acct-title{font-size:10px;color:var(--tx3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.l-acct{
+  display:flex;align-items:center;gap:8px;padding:8px 10px;
+  background:rgba(255,255,255,.04);border:1px solid var(--ln);
+  border-radius:9px;cursor:pointer;transition:all .15s;margin-bottom:5px;
+}
+.l-acct:active{background:rgba(255,255,255,.1);border-color:var(--ln2)}
+.l-acct-av{width:30px;height:30px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.l-acct-name{font-size:12px;font-weight:700;flex:1}
+.l-acct-meta{font-size:10px;color:var(--tx3)}
+.l-setup-link{font-size:11px;color:var(--tx3);text-align:center;margin-top:10px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.pw-wrap{position:relative}
+.pw-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:var(--tx3);display:flex;align-items:center;padding:4px}
+
+/* ═══ APP SHELL ═══ */
+.app{width:100%;max-width:430px;margin:0 auto;height:100vh;display:flex;flex-direction:column;background:var(--bg0);position:relative;overflow:hidden}
+.app-bg{position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(0,212,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.04) 1px,transparent 1px);background-size:32px 32px;pointer-events:none}
+
+/* ═══ HEADER ═══ */
+.hdr{position:relative;z-index:10;flex-shrink:0;background:linear-gradient(180deg,var(--bg2),rgba(11,26,46,.97));border-bottom:1px solid var(--ln2);padding:9px 14px}
+.hdr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.brand{display:flex;align-items:center;gap:7px}
+.bm{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--cy),#0060d0);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:#fff;box-shadow:0 0 8px rgba(0,212,255,.4)}
+.btx{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;letter-spacing:2px}
+.bbdg{font-size:9px;background:var(--cy2);color:var(--cy);border:1px solid rgba(0,212,255,.25);padding:2px 6px;border-radius:20px;font-weight:700}
+.h-acts{display:flex;gap:6px}
+.hbtn{height:28px;padding:0 9px;border-radius:7px;border:1px solid var(--ln2);background:rgba(255,255,255,.05);color:var(--tx2);font-size:10px;font-weight:600;font-family:'Be Vietnam Pro',sans-serif;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .15s}
+.hbtn:active{opacity:.7}
+.hbtn.ok{color:var(--gr);border-color:rgba(34,211,164,.3);background:var(--gr2)}
+.hbtn.go{color:var(--cy);border-color:rgba(0,212,255,.3);background:var(--cy2)}
+.hbtn.rd{color:var(--rd);border-color:rgba(255,77,109,.25);background:var(--rd2)}
+.hwel{display:flex;align-items:center;gap:8px}
+.ubk{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid var(--ln2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.ubk:active{background:rgba(255,255,255,.15)}
+.u-av{width:30px;height:30px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#fff}
+.u-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.u-sub{font-size:10px;color:var(--cy);font-weight:600}
+
+/* ═══ SCREEN + NAV ═══ */
+.scr{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;z-index:1;padding-bottom:76px}
+.scr::-webkit-scrollbar{width:3px}
+.scr::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:10px}
+.nav{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:430px;z-index:20;
+  background:rgba(6,15,30,.97);border-top:1px solid var(--ln2);
+  display:flex;padding:5px 2px calc(5px + env(safe-area-inset-bottom));
+  backdrop-filter:blur(20px);
+}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 2px;border-radius:7px;transition:all .15s}
+.ni:active{transform:scale(.88)}
+.nl{font-size:8px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.3px}
+.ni.act .nl{color:var(--cy)}
+
+/* ═══ SHARED ═══ */
+.sh{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 8px}
+.sht{font-size:16px;font-weight:800}
+.sht em{font-style:normal;color:var(--cy)}
+.shs{font-size:10px;color:var(--tx3);margin-top:1px}
+.card{background:var(--bg1);border:1px solid var(--ln);border-radius:var(--r);margin:0 12px 8px;padding:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:8px 12px 4px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px 12px 4px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px 12px 4px}
+.sc{background:var(--bg1);border:1px solid var(--ln);border-radius:10px;padding:8px 6px;text-align:center;position:relative;overflow:hidden}
+.sc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cy),transparent)}
+.sn{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:700;color:var(--cy);line-height:1}
+.sl{font-size:8px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.4px;margin-top:3px}
+.pb{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin:4px 0 2px}
+.pbf{height:100%;border-radius:3px;transition:width .5s ease}
+.tag{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:var(--cy2);color:rgba(0,212,255,.8);border:1px solid rgba(0,212,255,.2)}
+.tag.gr{background:var(--gr2);color:var(--gr);border-color:rgba(34,211,164,.3)}
+.tag.gd{background:var(--gd2);color:var(--gd);border-color:rgba(255,183,3,.3)}
+.tag.rd{background:var(--rd2);color:var(--rd);border-color:rgba(255,77,109,.3)}
+.tag.pu{background:var(--pu2);color:var(--pu);border-color:rgba(168,85,247,.3)}
+.tag.wm{background:var(--wm2);color:var(--wm);border-color:rgba(255,140,66,.3)}
+.kh-code{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cy);background:var(--cy2);border:1px solid rgba(0,212,255,.2);padding:2px 6px;border-radius:4px;letter-spacing:.5px}
+
+/* ═══ BUTTONS ═══ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;border:none;border-radius:var(--r2);font-family:'Be Vietnam Pro',sans-serif;font-weight:700;cursor:pointer;transition:all .15s}
+.btn:active{transform:scale(.95)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none !important}
+.bp{background:linear-gradient(135deg,#0060d0,var(--cy));color:#fff;box-shadow:0 2px 10px rgba(0,212,255,.2)}
+.bg{background:rgba(255,255,255,.06);border:1px solid var(--ln2);color:var(--tx2)}
+.bg:active{background:rgba(255,255,255,.12)}
+.bdr{background:var(--rd2);border:1px solid rgba(255,77,109,.22);color:var(--rd)}
+.bgr{background:var(--gr2);border:1px solid rgba(34,211,164,.28);color:var(--gr)}
+.bgd{background:var(--gd2);border:1px solid rgba(255,183,3,.28);color:var(--gd)}
+.bpu{background:var(--pu2);border:1px solid rgba(168,85,247,.28);color:var(--pu)}
+.bsm{height:30px;padding:0 11px;font-size:11px}
+.bmd{height:36px;padding:0 14px;font-size:12px}
+.blg{height:44px;padding:0 18px;font-size:13px;width:100%;border-radius:10px}
+
+/* ═══ FORM ═══ */
+.tabs{display:flex;gap:5px;padding:0 12px 8px;overflow-x:auto}
+.tabs::-webkit-scrollbar{display:none}
+.tb{padding:5px 11px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer;border:1px solid var(--ln2);color:var(--tx3);background:transparent;font-family:'Be Vietnam Pro',sans-serif;transition:all .15s}
+.tb.act{background:var(--cy);color:#000;border-color:var(--cy)}
+.sw{margin:0 12px 8px;display:flex;align-items:center;gap:8px;background:var(--bg1);border:1px solid var(--ln2);border-radius:var(--r);padding:0 12px}
+.sw input{flex:1;background:transparent;border:none;outline:none;color:var(--tx);font-size:13px;padding:10px 0;font-family:'Be Vietnam Pro',sans-serif}
+.sw input::placeholder{color:var(--tx3)}
+.fg{margin-bottom:11px}
+.fl{display:block;font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.fi{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--ln2);border-radius:8px;color:var(--tx);padding:9px 12px;font-size:13px;outline:none;font-family:'Be Vietnam Pro',sans-serif;transition:border-color .15s,background .15s}
+.fi:focus{border-color:var(--cy);background:rgba(0,212,255,.04)}
+.fi::placeholder{color:var(--tx3)}
+select.fi option{background:#0b1a2e;color:var(--tx)}
+textarea.fi{resize:vertical;min-height:60px;line-height:1.5}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.fsec{font-size:10px;font-weight:800;color:var(--cy);text-transform:uppercase;letter-spacing:.8px;padding:10px 0 7px;border-top:1px solid var(--ln);margin-top:4px;display:flex;align-items:center;gap:5px}
+.tg-row{display:flex;gap:6px}
+.tg{flex:1;padding:8px;border-radius:8px;text-align:center;cursor:pointer;font-size:12px;font-weight:700;border:1px solid var(--ln2);color:var(--tx3);background:rgba(255,255,255,.04);transition:all .15s}
+.tg.cy{background:var(--cy2);border-color:rgba(0,212,255,.4);color:var(--cy)}
+.tg.gr{background:var(--gr2);border-color:rgba(34,211,164,.4);color:var(--gr)}
+
+/* ═══ MODAL ═══ */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px)}
+.mod{background:var(--bg1);border:1px solid var(--ln2);border-radius:18px 18px 0 0;width:100%;max-width:430px;max-height:94vh;overflow-y:auto;padding:16px;animation:slideUp .28s cubic-bezier(.34,1.3,.64,1)}
+.mod::-webkit-scrollbar{width:3px}
+.mod::-webkit-scrollbar-thumb{background:var(--bg3)}
+@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.mhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.mti{font-size:16px;font-weight:800}
+.mcl{width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.07);border:1px solid var(--ln2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+.mcl:active{background:rgba(255,255,255,.15)}
+
+/* ═══ TOAST ═══ */
+.toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:300;white-space:nowrap;padding:9px 16px;border-radius:20px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;box-shadow:0 4px 20px rgba(0,0,0,.5);animation:toastIn .28s cubic-bezier(.34,1.3,.64,1)}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.t-ok{background:linear-gradient(135deg,#082a1a,#0d3522);border:1px solid rgba(34,211,164,.4);color:var(--gr)}
+.t-err{background:linear-gradient(135deg,#2a0810,#350d14);border:1px solid rgba(255,77,109,.4);color:var(--rd)}
+.t-inf{background:linear-gradient(135deg,#08182a,#0d2035);border:1px solid rgba(0,212,255,.35);color:var(--cy)}
+
+/* ═══ CUSTOMER CARD ═══ */
+.cc{background:var(--bg1);border:1px solid var(--ln);border-radius:var(--r);margin:0 12px 7px;padding:12px;cursor:pointer;transition:all .15s}
+.cc:active{border-color:var(--ln2);background:var(--bg2)}
+.cch{display:flex;align-items:flex-start;gap:9px;margin-bottom:9px}
+.c-av{width:38px;height:38px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}
+.c-nm{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-tp{font-size:10px;font-weight:600;color:var(--tx3);margin-top:1px}
+.sp{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.s-hot{background:rgba(255,183,3,.15);color:var(--gd);border:1px solid rgba(255,183,3,.3)}
+.s-warm{background:rgba(255,140,66,.12);color:var(--wm);border:1px solid rgba(255,140,66,.3)}
+.s-cold{background:rgba(138,155,191,.08);color:var(--tx3);border:1px solid rgba(138,155,191,.2)}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px}
+.cf{background:rgba(255,255,255,.03);border-radius:7px;padding:5px 8px}
+.cfl{font-size:9px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.3px}
+.cfv{font-size:11px;font-weight:600;color:var(--tx);margin-top:1px}
+.cfv.gd{color:var(--gd)}.cfv.cy{color:var(--cy)}.cfv.gr{color:var(--gr)}
+.c-note{font-size:11px;color:var(--tx2);line-height:1.5;background:rgba(255,255,255,.02);border-radius:7px;padding:7px 9px;border-left:2px solid var(--bg3);margin-bottom:8px}
+.c-acts{display:flex;gap:5px}
+
+/* ═══ VISIT CARD ═══ */
+.vc{background:var(--bg1);border:1px solid var(--ln);border-radius:var(--r);margin:0 12px 7px;padding:12px}
+.vch{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}
+.vcn{font-size:13px;font-weight:700}
+.vcnote{font-size:11px;color:var(--tx2);line-height:1.5;background:rgba(255,255,255,.02);border-radius:7px;padding:7px 9px;border-left:2px solid rgba(0,212,255,.3);margin-bottom:7px}
+
+/* ═══ GPS ═══ */
+.gps-bar{display:flex;align-items:center;gap:8px;padding:7px 12px;margin:0 12px 8px;background:var(--bg1);border:1px solid var(--ln);border-radius:10px;cursor:pointer}
+.gps-bar:active{background:var(--bg2)}
+.gps-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:all .3s}
+.gps-ok{background:var(--gr);box-shadow:0 0 6px var(--gr);animation:blinkGps 2s infinite}
+.gps-ld{background:var(--cy);animation:pulseGps 1s infinite}
+.gps-off{background:var(--tx3)}
+@keyframes blinkGps{0%,100%{box-shadow:0 0 4px var(--gr)}50%{box-shadow:0 0 12px var(--gr)}}
+@keyframes pulseGps{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+.gps-txt{font-size:11px;color:var(--tx2);flex:1}
+.gps-coord{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cy)}
+.nearby-item{display:flex;align-items:center;gap:10px;background:var(--bg1);border:1px solid var(--ln);border-radius:10px;margin:0 12px 6px;padding:10px 12px;cursor:pointer}
+.nearby-item:active{background:var(--bg2)}
+.nd{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--cy);min-width:50px;flex-shrink:0}
+#mapWrap{height:300px;border-radius:var(--r);overflow:hidden;margin:0 12px 8px;border:1px solid var(--ln)}
+.leaflet-container{background:#0b1a2e !important}
+
+/* ═══ MISC ═══ */
+.hrow{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--ln)}
+.hrow:last-child{border:none}
+.ibox{background:var(--cy3);border:1px solid rgba(0,212,255,.16);border-radius:8px;padding:9px 11px;font-size:11px;color:rgba(0,212,255,.85);line-height:1.6}
+.ibox strong{color:var(--cy)}
+.wbox{background:rgba(255,183,3,.07);border:1px solid rgba(255,183,3,.2);border-radius:8px;padding:9px 11px;font-size:11px;color:rgba(255,183,3,.9);line-height:1.6}
+.es{text-align:center;padding:40px 20px;color:var(--tx3)}
+.ei{width:50px;height:50px;background:var(--bg2);border:1px solid var(--ln);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px}
+.comp-row{display:flex;gap:5px;align-items:center;margin-bottom:5px}
+.dup-warn{background:rgba(255,183,3,.07);border:1px solid rgba(255,183,3,.28);border-radius:9px;padding:10px 12px;margin-bottom:10px}
+.dup-item{display:flex;align-items:center;gap:8px;padding:6px 8px;background:rgba(255,255,255,.04);border-radius:7px;margin-bottom:4px;cursor:pointer;border:1px solid transparent;transition:all .15s}
+.dup-item:active{border-color:rgba(255,183,3,.3)}
+.ci-badge{display:inline-flex;align-items:center;gap:4px;background:var(--gr2);border:1px solid rgba(34,211,164,.3);border-radius:6px;padding:3px 8px;font-size:10px;color:var(--gr);font-weight:700}
+.cblk{background:rgba(0,0,0,.4);border:1px solid var(--ln2);border-radius:9px;padding:11px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#7ec8f7;line-height:1.8;white-space:pre-wrap;max-height:200px;overflow-y:auto}
+.team-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.t-thanh{background:rgba(0,212,255,.12);color:var(--cy);border:1px solid rgba(0,212,255,.25)}
+.t-hai{background:rgba(34,211,164,.12);color:var(--gr);border:1px solid rgba(34,211,164,.25)}
+.t-admin{background:rgba(255,183,3,.12);color:var(--gd);border:1px solid rgba(255,183,3,.25)}
+.spinner{width:18px;height:18px;border:2px solid var(--ln2);border-top-color:var(--cy);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="toast-slot"></div>
+
+<script>
+// ════════════════════════════════════════
+//  SVG ICONS
+// ════════════════════════════════════════
+const ico = (path, size=18, color='currentColor') =>
+  `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${color}"><path d="${path}"/></svg>`;
+
+const P = {
+  home:'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z',
+  cust:'M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z',
+  visit:'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
+  map:'M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z',
+  cfg:'M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54A.484.484 0 0016 4h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L4.74 10.47c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z',
+  plus:'M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z',
+  back:'M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z',
+  close:'M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
+  trash:'M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z',
+  search:'M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z',
+  sync:'M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z',
+  check:'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z',
+  dl:'M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z',
+  phone:'M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z',
+  lock:'M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z',
+  eye:'M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z',
+  eyeoff:'M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46A11.804 11.804 0 001 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z',
+  logout:'M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z',
+  gps:'M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z',
+  ci:'M9 12l-4.463 4.969-4.537-4.969h3c0-4.97 4.031-9 9-9 2.395 0 4.576.94 6.178 2.468l-2.004 2.168C15.045 6.63 13.595 6 12 6c-3.309 0-6 2.691-6 6h3zm10.463-4.969L15 12h3c0 3.309-2.691 6-6 6-1.595 0-3.045-.63-4.113-1.637l-2.004 2.168C7.424 20.06 9.605 21 12 21c4.969 0 9-4.031 9-9h3l-4.537-4.969z',
+  info:'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z',
+  rpt:'M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z',
+  copy:'M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z',
+};
+
+// ════════════════════════════════════════
+//  STORAGE
+// ════════════════════════════════════════
+const DB = {
+  g: (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  s: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  d: (k) => { try { localStorage.removeItem(k); } catch {} }
+};
+
+// ════════════════════════════════════════
+//  USER LIST (from Danh_Ba sheet)
+// ════════════════════════════════════════
+const USER_LIST = [
+  { email:'hai_hn@quochuyanhcorp.vn',    pw:'12345@hn', name:'Phạm Đức Hải',     team:'Team Hải',    role:'Admin',       provinces:['Hà Nam','Yên Bái','Lai Châu','Sơn La'],                     color:'#ffb703' },
+  { email:'vandat@quochuyanhcorp.vn',    pw:'12345@hn', name:'Nguyễn Văn Đạt',   team:'Team Hải',    role:'KD',          provinces:['Hoà Bình','Điện Biên','Ninh Bình','Lào Cai'],              color:'#22d3a4' },
+  { email:'vuvien@quochuyanhcorp.vn',    pw:'12345@hn', name:'Nguyễn Vụ Viễn',   team:'Team Hải',    role:'KD',          provinces:['Thái Nguyên','Hưng Yên','Bắc Cạn','Cao Bằng'],            color:'#00d4ff' },
+  { email:'vietduy_sr@quochuyanhcorp.vn',pw:'12345@hn', name:'Nguyễn Viết Duy',  team:'Team Hải',    role:'KD',          provinces:['Thái Bình'],                                                color:'#ff8c42' },
+  { email:'ducdiep_sr@quochuyanhcorp.vn',pw:'12345@hn', name:'Phạm Đức Điệp',    team:'Team Hải',    role:'KD',          provinces:['Nam Định'],                                                 color:'#a855f7' },
+  { email:'thang_hn@quochuyanhcorp.vn',  pw:'12345@hn', name:'Ngô Văn Thắng',    team:'Team Thắng',  role:'Team Leader', provinces:['Thanh Hoá','Hà Giang','Bắc Ninh'],                         color:'#ff4d6d' },
+  { email:'hoa_hn@quochuyanhcorp.vn',    pw:'12345@hn', name:'Nguyễn Hữu Hoà',   team:'Team Thắng',  role:'KD',          provinces:['Tuyên Quang','Phú Thọ','Vĩnh Phúc'],                       color:'#22d3a4' },
+  { email:'phihoan_hn@quochuyanhcorp.vn',pw:'12345@hn', name:'Phan Phi Hoàn',    team:'Team Thắng',  role:'KD',          provinces:['Quảng Ninh','Hải Dương','Bắc Giang'],                      color:'#ffb703' },
+  { email:'vanthanh@quochuyanhcorp.vn',  pw:'12345@hn', name:'Nguyễn Văn Thành', team:'Team Thắng',  role:'KD',          provinces:['Nghệ An'],                                                  color:'#00d4ff' },
+  { email:'minhthanh_sr@quochuyanhcorp.vn',pw:'12345@hn',name:'Phạm Minh Thành', team:'Team Thắng',  role:'KD',          provinces:['Hà Tĩnh'],                                                  color:'#ff8c42' },
+];
+
+// ════════════════════════════════════════
+//  CONSTANTS
+// ════════════════════════════════════════
+const COLORS = ['#ffb703','#ff4d6d','#22d3a4','#00d4ff','#1a6ff5','#ff8c42','#a855f7'];
+const HINH_THUC = ['Gọi điện','Trực tiếp','Online','Zalo'];
+const LOAI_HINH = ['Xưởng Nhôm Kính','Công ty thi công','Nhà phân phối','Đại lý cấp 2','Bán lẻ','Dự án'];
+const MA_APOLLO = ['A500','A600','A700','A300-GST','FOAMA','FOAMG','APF-B1','AEG','BOND','SANNI','A68','A79'];
+const ALL_PROVS = ['Hà Nội','Hải Phòng','Thái Nguyên','Bắc Ninh','Hải Dương','Hưng Yên','Hà Nam','Nam Định','Ninh Bình','Thái Bình','Vĩnh Phúc','Phú Thọ','Bắc Giang','Lạng Sơn','Quảng Ninh','Lào Cai','Yên Bái','Hòa Bình','Sơn La','Điện Biên','Lai Châu','Cao Bằng','Bắc Kạn','Hà Giang','Tuyên Quang','Nghệ An','Hà Tĩnh','Thanh Hóa'];
+
+const now = new Date();
+const CUR_MONTH = now.getMonth() + 1;
+const CUR_YEAR  = now.getFullYear();
+
+// ════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════
+const today  = () => new Date().toLocaleDateString('vi-VN');
+const nowStr = () => new Date().toLocaleString('vi-VN');
+const fmtN   = n  => Number(n || 0).toLocaleString('vi-VN');
+const pct    = (a, b) => b > 0 ? Math.min(Math.round((a / b) * 100), 999) : 0;
+const vv     = id => (document.getElementById(id)?.value || '').trim();
+
+function norm(s) {
+  if (!s) return '';
+  const m = {'à':'a','á':'a','ả':'a','ã':'a','ạ':'a','ă':'a','ắ':'a','ặ':'a','ằ':'a','ẳ':'a','ẵ':'a','â':'a','ấ':'a','ầ':'a','ẩ':'a','ẫ':'a','ậ':'a','è':'e','é':'e','ẻ':'e','ẽ':'e','ẹ':'e','ê':'e','ế':'e','ề':'e','ể':'e','ễ':'e','ệ':'e','ì':'i','í':'i','ỉ':'i','ĩ':'i','ị':'i','ò':'o','ó':'o','ỏ':'o','õ':'o','ọ':'o','ô':'o','ố':'o','ồ':'o','ổ':'o','ỗ':'o','ộ':'o','ơ':'o','ớ':'o','ờ':'o','ở':'o','ỡ':'o','ợ':'o','ù':'u','ú':'u','ủ':'u','ũ':'u','ụ':'u','ư':'u','ứ':'u','ừ':'u','ử':'u','ữ':'u','ự':'u','ỳ':'y','ý':'y','ỷ':'y','ỹ':'y','ỵ':'y','đ':'d'};
+  return s.toLowerCase().split('').map(c => m[c] || c).join('').replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();
+}
+function simScore(a, b) {
+  const na = norm(a), nb = norm(b);
+  if (!na || !nb) return 0;
+  if (na === nb) return 1;
+  const wa = na.split(' ').filter(w => w.length > 1);
+  const wb = nb.split(' ').filter(w => w.length > 1);
+  if (!wa.length || !wb.length) return 0;
+  const cm = wa.filter(w => wb.some(x => x === w || x.startsWith(w) || w.startsWith(x))).length;
+  return cm / Math.max(wa.length, wb.length);
+}
+function distKm(lat1, lon1, lat2, lon2) {
+  const R = 6371, dLat = (lat2-lat1)*Math.PI/180, dLon = (lon2-lon1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function nextKhCode() {
+  const n = DB.g('apSeq', 0) + 1;
+  DB.s('apSeq', n);
+  return 'KH-' + String(n).padStart(4, '0');
+}
+
+// ════════════════════════════════════════
+//  APP STATE
+// ════════════════════════════════════════
+let ST = {
+  user:     null,
+  scr:      'home',
+  custs:    [],
+  visits:   [],
+  modal:    null,
+  srch:     '',
+  flt:      'all',
+  page:     0,
+  PER_PAGE: 30,
+  sync:     'idle',
+  gps:      null,
+  gpsState: 'off',  // off | loading | ok
+  nearby:   [],
+  mapInited:false,
+  leafMap:  null,
+  gasUrl:   DB.g('apGas', ''),
+};
+let FRM = { comps: [], samples: [] };
+
+function save() {
+  if (!ST.user) return;
+  DB.s('apC_' + ST.user.email, ST.custs);
+  DB.s('apV_' + ST.user.email, ST.visits);
+}
+
+// ════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toast-slot');
+  if (!el) return;
+  el.innerHTML = `<div class="toast t-${type}">${ico(P.check, 13)} ${msg}</div>`;
+  setTimeout(() => { el.innerHTML = ''; }, 2800);
+}
+
+// ════════════════════════════════════════
+//  RENDER
+// ════════════════════════════════════════
+function render() {
+  document.getElementById('root').innerHTML = ST.user ? buildApp() : buildLogin();
+  if (ST.user) {
+    document.querySelector('#syncBtn')?.addEventListener('click', doSync);
+    if (ST.scr === 'map') setTimeout(initMap, 200);
+  }
+}
+
+function reScr() {
+  const el = document.getElementById('scr');
+  if (el) {
+    el.innerHTML = buildScr();
+    if (ST.scr === 'map') setTimeout(initMap, 200);
+  }
+}
+
+// ════════════════════════════════════════
+//  LOGIN PAGE
+// ════════════════════════════════════════
+function buildLogin() {
+  return `
+<div id="loginPage">
+  <div class="lbox">
+    <div class="l-logo">AC</div>
+    <div class="l-title">APOLLO CRM</div>
+    <div class="l-sub">Hệ thống quản lý bán hàng · Miền Bắc</div>
+
+    <div class="l-card">
+      <div class="l-err" id="lErr">${ico(P.lock, 14)} <span id="lErrMsg">Sai email hoặc mật khẩu</span></div>
+
+      <div class="fg">
+        <label class="fl">Email</label>
+        <input class="fi" id="lEmail" type="email" placeholder="ten@quochuyanhcorp.vn" autocomplete="email">
+      </div>
+      <div class="fg">
+        <label class="fl">Mật khẩu</label>
+        <div class="pw-wrap">
+          <input class="fi" id="lPw" type="password" placeholder="Nhập mật khẩu" autocomplete="current-password">
+          <div class="pw-eye" id="pwEye">${ico(P.eye, 16)}</div>
+        </div>
+      </div>
+      <button class="btn bp blg" id="loginBtn">
+        ${ico(P.lock, 16, '#fff')} Đăng nhập
+      </button>
+
+      <div class="l-accounts">
+        <div class="l-acct-title">Chọn nhanh tài khoản</div>
+        ${USER_LIST.map(u => `
+          <div class="l-acct" data-email="${u.email}">
+            <div class="l-acct-av" style="background:${u.color}22;color:${u.color}">
+              ${u.name.split(' ').pop().charAt(0)}
+            </div>
+            <div style="flex:1;min-width:0">
+              <div class="l-acct-name">${u.name}</div>
+              <div class="l-acct-meta">${u.team} · ${u.role} · ${u.provinces[0]}${u.provinces.length>1?'…':''}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="l-setup-link" id="setupToggle">⚙ Cài đặt Google Sheets URL</div>
+      <div id="setupPanel" style="display:none;margin-top:10px">
+        <div class="fg">
+          <label class="fl">Apps Script URL</label>
+          <input class="fi" id="gasInp" value="${DB.g('apGas','')}" placeholder="https://script.google.com/macros/s/...">
+        </div>
+        <button class="btn bg bsm" style="width:100%;justify-content:center" id="saveGasLogin">Lưu URL</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+}
+
+function bindLogin() {
+  // Login button
+  document.getElementById('loginBtn')?.addEventListener('click', doLogin);
+
+  // Enter key
+  document.getElementById('lPw')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  // Password toggle
+  document.getElementById('pwEye')?.addEventListener('click', () => {
+    const inp = document.getElementById('lPw');
+    const eye = document.getElementById('pwEye');
+    if (!inp) return;
+    if (inp.type === 'password') {
+      inp.type = 'text';
+      eye.innerHTML = ico(P.eyeoff, 16);
+    } else {
+      inp.type = 'password';
+      eye.innerHTML = ico(P.eye, 16);
+    }
+  });
+
+  // Quick select accounts
+  document.querySelectorAll('.l-acct[data-email]').forEach(el => {
+    el.addEventListener('click', () => {
+      const email = el.dataset.email;
+      const emailInp = document.getElementById('lEmail');
+      const pwInp = document.getElementById('lPw');
+      if (emailInp) emailInp.value = email;
+      if (pwInp) pwInp.value = '12345@hn';
+      doLogin();
+    });
+  });
+
+  // Setup toggle
+  document.getElementById('setupToggle')?.addEventListener('click', () => {
+    const p = document.getElementById('setupPanel');
+    if (p) p.style.display = p.style.display === 'none' ? 'block' : 'none';
+  });
+
+  // Save GAS URL on login page
+  document.getElementById('saveGasLogin')?.addEventListener('click', () => {
+    const url = vv('gasInp');
+    ST.gasUrl = url;
+    DB.s('apGas', url);
+    toast('✅ Đã lưu URL');
+  });
+}
+
+function doLogin() {
+  const email = (document.getElementById('lEmail')?.value || '').trim().toLowerCase();
+  const pw    = (document.getElementById('lPw')?.value || '').trim();
+  const errEl = document.getElementById('lErr');
+
+  if (!email || !pw) {
+    if (errEl) { document.getElementById('lErrMsg').textContent = 'Nhập đầy đủ email và mật khẩu'; errEl.classList.add('show'); }
+    return;
+  }
+
+  const user = USER_LIST.find(u => u.email.toLowerCase() === email && u.pw === pw);
+  if (!user) {
+    if (errEl) { document.getElementById('lErrMsg').textContent = 'Sai email hoặc mật khẩu'; errEl.classList.add('show'); }
+    return;
+  }
+
+  // Success
+  ST.user   = user;
+  ST.custs  = DB.g('apC_' + user.email, []);
+  ST.visits = DB.g('apV_' + user.email, []);
+  ST.scr    = 'home';
+
+  render();
+  if (ST.gasUrl) setTimeout(doSync, 800);
+}
+
+function doLogout() {
+  if (!confirm('Đăng xuất khỏi tài khoản?')) return;
+  save();
+  ST.user = null; ST.custs = []; ST.visits = [];
+  ST.gps = null; ST.gpsState = 'off'; ST.nearby = [];
+  if (ST.leafMap) { ST.leafMap.remove(); ST.leafMap = null; ST.mapInited = false; }
+  render();
+}
+
+// ════════════════════════════════════════
+//  APP SHELL
+// ════════════════════════════════════════
+function buildApp() {
+  const u = ST.user;
+  const BACK_SCRS = ['custs','visits','map','cfg'];
+  const synCls = ST.sync === 'ok' ? 'hbtn ok' : ST.sync === 'syncing' ? 'hbtn go' : 'hbtn';
+  const teamCls = u.team === 'Team Thắng' ? 't-thanh' : u.team === 'Team Hải' ? 't-hai' : 't-hai';
+  const roleCls = u.role === 'Admin' ? 't-admin' : teamCls;
+  const NAV = [
+    { k:'home', i:'home', l:'Dashboard' },
+    { k:'custs', i:'cust', l:'Khách hàng' },
+    { k:'visits', i:'visit', l:'Nhật ký' },
+    { k:'map', i:'map', l:'Bản đồ' },
+    { k:'cfg', i:'cfg', l:'Cài đặt' },
+  ];
+  const initials = u.name.split(' ').pop().charAt(0);
+
+  return `
+<div class="app">
+  <div class="app-bg"></div>
+  <div class="hdr">
+    <div class="hdr-top">
+      <div class="brand">
+        <div class="bm">AC</div>
+        <div class="btx">APOLLO CRM</div>
+        <div class="bbdg">PRO</div>
+      </div>
+      <div class="h-acts">
+        <button class="${synCls}" id="syncBtn">
+          ${ico(P.sync, 12)} ${ST.sync === 'syncing' ? 'Sync...' : ST.sync === 'ok' ? 'Synced ✓' : 'Sync'}
+        </button>
+        <button class="hbtn rd" id="logoutBtn">${ico(P.logout, 12)} Thoát</button>
+      </div>
+    </div>
+    <div class="hwel">
+      ${BACK_SCRS.includes(ST.scr) ? `<div class="ubk" id="backBtn">${ico(P.back, 15, '#8a9bbf')}</div>` : ''}
+      <div class="u-av" style="background:${u.color}22;box-shadow:0 0 0 2px ${u.color}44;color:${u.color}">${initials}</div>
+      <div style="flex:1;min-width:0">
+        <div class="u-name">${u.name}</div>
+        <div class="u-sub">${u.team} · <span class="team-badge ${roleCls}">${u.role}</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scr" id="scr">${buildScr()}</div>
+
+  <nav class="nav">
+    ${NAV.map(x => `
+      <div class="ni ${ST.scr === x.k ? 'act' : ''}" data-nav="${x.k}">
+        ${ico(P[x.i], 18, ST.scr === x.k ? '#00d4ff' : '#506080')}
+        <div class="nl">${x.l}</div>
+      </div>
+    `).join('')}
+  </nav>
+
+  ${ST.modal ? buildModal() : ''}
+</div>`;
+}
+
+function bindApp() {
+  document.getElementById('syncBtn')?.addEventListener('click', doSync);
+  document.getElementById('logoutBtn')?.addEventListener('click', doLogout);
+  document.getElementById('backBtn')?.addEventListener('click', () => navTo('home'));
+
+  document.querySelectorAll('[data-nav]').forEach(el => {
+    el.addEventListener('click', () => navTo(el.dataset.nav));
+  });
+
+  bindScr();
+  if (ST.modal) bindModal();
+}
+
+// ════════════════════════════════════════
+//  SCREENS
+// ════════════════════════════════════════
+function buildScr() {
+  switch (ST.scr) {
+    case 'home':   return scrDash();
+    case 'custs':  return scrCusts();
+    case 'visits': return scrVisits();
+    case 'map':    return scrMap();
+    case 'cfg':    return scrCfg();
+    default:       return scrDash();
+  }
+}
+
+function bindScr() {
+  // Customer cards
+  document.querySelectorAll('[data-edit-cust]').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.closest('[data-add-visit],[data-del-cust],[data-checkin]')) return;
+      openEditCust(parseInt(el.dataset.editCust));
+    });
+  });
+  document.querySelectorAll('[data-add-visit]').forEach(el => {
+    el.addEventListener('click', e => { e.stopPropagation(); openAddVisit(parseInt(el.dataset.addVisit)); });
+  });
+  document.querySelectorAll('[data-del-cust]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      if (confirm('Xóa khách hàng?')) {
+        ST.custs = ST.custs.filter(c => c.id !== parseInt(el.dataset.delCust));
+        save(); reScr(); toast('Đã xóa KH');
+        if (el.dataset.fromModal) closeModal();
+      }
+    });
+  });
+  document.querySelectorAll('[data-del-visit]').forEach(el => {
+    el.addEventListener('click', () => {
+      if (confirm('Xóa nhật ký?')) {
+        ST.visits = ST.visits.filter(v => v.id !== parseInt(el.dataset.delVisit));
+        save(); reScr(); toast('Đã xóa nhật ký');
+      }
+    });
+  });
+  document.querySelectorAll('[data-checkin]').forEach(el => {
+    el.addEventListener('click', e => { e.stopPropagation(); openCheckIn(parseInt(el.dataset.checkin)); });
+  });
+  document.querySelectorAll('[data-nearby-cust]').forEach(el => {
+    el.addEventListener('click', () => openEditCust(parseInt(el.dataset.nearbyCust)));
+  });
+  // Search
+  document.getElementById('srchInput')?.addEventListener('input', e => {
+    ST.srch = e.target.value; ST.page = 0; reScr();
+  });
+  // Filter tabs
+  document.querySelectorAll('[data-flt]').forEach(el => {
+    el.addEventListener('click', () => { ST.flt = el.dataset.flt; ST.page = 0; reScr(); });
+  });
+  // Pagination
+  document.getElementById('prevPage')?.addEventListener('click', () => { if (ST.page > 0) { ST.page--; reScr(); } });
+  document.getElementById('nextPage')?.addEventListener('click', () => { ST.page++; reScr(); });
+  // GPS bar
+  document.getElementById('gpsBar')?.addEventListener('click', () => { if (ST.gpsState !== 'ok') locateMe(); });
+  // Buttons
+  document.getElementById('addCustBtn')?.addEventListener('click', openAddCust);
+  document.getElementById('addVisitBtn')?.addEventListener('click', () => openAddVisit(null));
+  document.getElementById('locateBtn')?.addEventListener('click', locateMe);
+  document.getElementById('geocodeBtn')?.addEventListener('click', geocodeAll);
+  document.getElementById('cfgSaveGas')?.addEventListener('click', cfgSaveGas);
+  document.getElementById('cfgCopyGas')?.addEventListener('click', () => {
+    navigator.clipboard?.writeText(GAS_CODE).then(() => toast('✅ Đã copy code!'));
+  });
+}
+
+// ── DASHBOARD ──
+function scrDash() {
+  const u = ST.user, c = ST.custs, v = ST.visits;
+  const mnV = v.filter(x => x.m === CUR_MONTH && x.y === CUR_YEAR);
+  const totalDs = mnV.reduce((s, x) => s + parseFloat(x.dsApollo || 0), 0);
+  const target = 7200; // default, override from Sheets later
+  const p = pct(totalDs, target);
+  const pCol = p >= 100 ? 'var(--gr)' : p >= 60 ? 'var(--gd)' : 'var(--rd)';
+
+  // Timeline 6 months
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    let m = CUR_MONTH - i, y = CUR_YEAR;
+    if (m <= 0) { m += 12; y--; }
+    const ds = v.filter(x => x.m === m && x.y === y).reduce((s, x) => s + parseFloat(x.dsApollo || 0), 0);
+    months.push({ label: `T${m}`, ds, cur: i === 0 });
+  }
+  const maxDs = Math.max(...months.map(x => x.ds), 1);
+
+  const gpsDotCls = ST.gpsState === 'ok' ? 'gps-ok' : ST.gpsState === 'loading' ? 'gps-ld' : 'gps-off';
+  const gpsTxt = ST.gpsState === 'ok'
+    ? `${ST.gps.lat.toFixed(4)}, ${ST.gps.lng.toFixed(4)} · ${ST.nearby.length} KH gần`
+    : ST.gpsState === 'loading' ? 'Đang lấy vị trí...' : 'Nhấn để bật GPS';
+
+  return `
+  <div class="sh" style="padding-bottom:4px">
+    <div>
+      <div class="sht">Dashboard <em>${u.name.split(' ').pop()}</em></div>
+      <div class="shs">T${CUR_MONTH}/${CUR_YEAR} · ${c.length} KH · ${v.length} nhật ký</div>
+    </div>
+    <button class="btn bp bsm" id="addVisitBtn">${ico(P.plus, 13, '#fff')} Ghi nhật ký</button>
+  </div>
+
+  <div class="gps-bar" id="gpsBar">
+    <div class="gps-dot ${gpsDotCls}"></div>
+    <div class="gps-txt">${gpsTxt}</div>
+    ${ico(P.gps, 14, 'var(--tx3)')}
+  </div>
+
+  <div class="grid4">
+    <div class="sc"><div class="sn">${c.length}</div><div class="sl">Tổng KH</div></div>
+    <div class="sc"><div class="sn" style="color:var(--gr)">${c.filter(x => x.isNew).length}</div><div class="sl">KH Mới</div></div>
+    <div class="sc"><div class="sn" style="color:${pCol}">${p}%</div><div class="sl">Target</div></div>
+    <div class="sc"><div class="sn" style="color:var(--gd)">${c.filter(x => x.status === 'hot').length}</div><div class="sl">HOT</div></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div style="font-size:11px;font-weight:700;color:var(--tx2)">${ico(P.rpt, 12, 'var(--cy)')} DS Apollo T${CUR_MONTH}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:${pCol}">${p}%</div>
+    </div>
+    <div class="pb"><div class="pbf" style="width:${Math.min(p,100)}%;background:${pCol}"></div></div>
+    <div style="font-size:10px;color:var(--tx3)">${fmtN(totalDs)} / ${fmtN(target)} thùng · Còn <strong style="color:var(--gd)">${fmtN(Math.max(0, target - totalDs))}</strong> thùng</div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px">DS Apollo 6 tháng gần nhất (thùng)</div>
+    <div style="display:flex;gap:5px;align-items:flex-end;height:60px">
+      ${months.map(m => {
+        const h = Math.max((m.ds / maxDs) * 56, 3);
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
+          <div style="width:100%;height:${h}px;background:${m.cur ? 'linear-gradient(to top,var(--gd),#fcd34d)' : 'linear-gradient(to top,#0060d0,var(--cy))'};border-radius:3px 3px 0 0;position:relative">
+            <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:8px;color:${m.cur?'var(--gd)':'var(--cy)'};font-family:'JetBrains Mono',monospace;white-space:nowrap">${m.ds > 0 ? fmtN(Math.round(m.ds)) : ''}</div>
+          </div>
+          <div style="font-size:8px;color:var(--tx3);font-family:'JetBrains Mono',monospace">${m.label}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+
+  ${ST.gpsState === 'ok' && ST.nearby.length > 0 ? `
+  <div class="sh" style="padding-top:8px;padding-bottom:4px">
+    <div class="sht">KH <em>gần đây (${ST.nearby.length})</em></div>
+    <button class="btn bg bsm" data-nav="map">${ico(P.map, 12)} Bản đồ</button>
+  </div>
+  ${ST.nearby.slice(0, 4).map(x => `
+    <div class="nearby-item" data-nearby-cust="${x.c.id}">
+      <div class="nd">${x.km < 1 ? Math.round(x.km * 1000) + 'm' : x.km.toFixed(1) + 'km'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.c.ten}</div>
+        <div style="font-size:10px;color:var(--tx3)">${x.c.loai || ''} · ${x.c.tinh || ''}</div>
+      </div>
+      <button class="btn bp bsm" data-checkin="${x.c.id}">${ico(P.ci, 12, '#fff')} Check-in</button>
+    </div>
+  `).join('')}
+  ` : ''}
+
+  <div class="sh" style="padding-top:8px;padding-bottom:4px">
+    <div class="sht">Nhật ký <em>gần nhất</em></div>
+    <button class="btn bg bsm" data-nav="visits">${ico(P.visit, 12)} Tất cả</button>
+  </div>
+  ${v.length === 0 ? `<div class="es"><div class="ei">${ico(P.visit, 22, '#506080')}</div><p style="font-size:12px;font-weight:600;color:var(--tx2)">Chưa có nhật ký</p></div>` : v.slice(0, 3).map(x => buildVisitCard(x)).join('')}
+  <div style="height:8px"></div>`;
+}
+
+// ── CUSTOMERS ──
+function scrCusts() {
+  const q = norm(ST.srch);
+  let fc = ST.custs.filter(c => {
+    const mq = !q || norm(c.ten || '').includes(q) || norm(c.tinh || '').includes(q) || (c.sdt || '').includes(ST.srch) || (c.ma || '').toLowerCase().includes(ST.srch.toLowerCase());
+    const mf = ST.flt === 'all' || c.status === ST.flt;
+    return mq && mf;
+  });
+  const total = fc.length;
+  const paged = fc.slice(ST.page * ST.PER_PAGE, (ST.page + 1) * ST.PER_PAGE);
+  const cnts = { hot: ST.custs.filter(x => x.status === 'hot').length, warm: ST.custs.filter(x => x.status === 'warm').length, cold: ST.custs.filter(x => x.status === 'cold').length };
+
+  return `
+  <div class="sh">
+    <div>
+      <div class="sht">Khách <em>hàng</em></div>
+      <div class="shs">${total}/${ST.custs.length} KH · ${ST.user.provinces.slice(0,2).join(', ')}${ST.user.provinces.length > 2 ? '...' : ''}</div>
+    </div>
+    <button class="btn bp bsm" id="addCustBtn">${ico(P.plus, 13, '#fff')} Thêm</button>
+  </div>
+  <div class="sw">${ico(P.search, 15, '#506080')}<input id="srchInput" placeholder="Tên, mã, SĐT, tỉnh..." value="${ST.srch}"></div>
+  <div class="tabs">
+    ${[['all',`Tất cả (${ST.custs.length})`],['hot',`HOT (${cnts.hot})`],['warm',`WARM (${cnts.warm})`],['cold',`COLD (${cnts.cold})`]].map(([v, l]) => `<div class="tb ${ST.flt === v ? 'act' : ''}" data-flt="${v}">${l}</div>`).join('')}
+  </div>
+  ${paged.length === 0
+    ? `<div class="es"><div class="ei">${ico(P.cust, 22, '#506080')}</div><p style="font-size:12px;font-weight:600;color:var(--tx2)">${ST.custs.length === 0 ? 'Chưa có KH. Nhấn Sync để tải dữ liệu.' : 'Không tìm thấy'}</p></div>`
+    : paged.map(c => buildCustCard(c)).join('')
+  }
+  ${total > ST.PER_PAGE ? `
+  <div style="display:flex;gap:8px;justify-content:center;padding:8px 12px 4px">
+    <button class="btn bg bsm" id="prevPage" ${ST.page === 0 ? 'disabled' : ''}>← Trước</button>
+    <span style="font-size:11px;color:var(--tx3);align-self:center">${ST.page * ST.PER_PAGE + 1}–${Math.min((ST.page + 1) * ST.PER_PAGE, total)} / ${total}</span>
+    <button class="btn bg bsm" id="nextPage" ${(ST.page + 1) * ST.PER_PAGE >= total ? 'disabled' : ''}>Tiếp →</button>
+  </div>` : ''}
+  <div style="height:8px"></div>`;
+}
+
+function buildCustCard(c) {
+  const p = pct(parseFloat(c.dsApollo || 0), parseFloat(c.target || 1));
+  const pCol = p >= 100 ? 'var(--gr)' : p >= 60 ? 'var(--gd)' : 'var(--rd)';
+  const statusCls = c.status === 'hot' ? 's-hot' : c.status === 'cold' ? 's-cold' : 's-warm';
+  const statusLbl = c.status === 'hot' ? 'HOT' : c.status === 'cold' ? 'COLD' : 'WARM';
+  return `
+  <div class="cc" data-edit-cust="${c.id}">
+    <div class="cch">
+      <div class="c-av" style="background:${c.color}22;border:1.5px solid ${c.color}44;color:${c.color}">${(c.ten||'?').charAt(0)}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:1px">
+          <div class="c-nm">${c.ten || '–'}</div>
+          <span class="kh-code">${c.ma || '–'}</span>
+        </div>
+        <div class="c-tp">${c.loai || '–'} · ${c.tinh || '–'}</div>
+      </div>
+      <span class="sp ${statusCls}">${statusLbl}</span>
+    </div>
+    <div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:10px;color:var(--tx3)">DS: <strong style="color:var(--cy)">${fmtN(c.dsApollo||0)}</strong> / <strong style="color:var(--tx2)">${fmtN(c.target||0)}</strong> thùng</span>
+        <span style="font-size:10px;font-weight:700;color:${pCol}">${p}%</span>
+      </div>
+      <div class="pb"><div class="pbf" style="width:${Math.min(p,100)}%;background:${pCol}"></div></div>
+    </div>
+    <div class="cgrid">
+      <div class="cf"><div class="cfl">SĐT</div><div class="cfv">${c.sdt || '–'}</div></div>
+      <div class="cf"><div class="cfl">VT cuối</div><div class="cfv">${c.lastVisit || '–'}</div></div>
+      <div class="cf"><div class="cfl">Đối thủ</div><div class="cfv rd" style="font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${(c.comps||[]).map(x=>x.name).join(', ')||'–'}</div></div>
+      <div class="cf"><div class="cfl">Thay thế</div><div class="cfv cy" style="font-size:10px">${c.maThayThe || '–'}</div></div>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">
+      ${c.isNew ? '<span class="tag gr">Mới</span>' : '<span class="tag">Cũ</span>'}
+      ${c.hinhThuc ? `<span class="tag wm">${c.hinhThuc === 'direct' ? '🤝 Trực tiếp' : '📞 Gọi điện'}</span>` : ''}
+      ${c.lat ? '<span class="tag pu">GPS</span>' : ''}
+    </div>
+    ${c.note ? `<div class="c-note">${c.note}</div>` : ''}
+    <div class="c-acts">
+      <button class="btn bp bsm" style="flex:1" data-add-visit="${c.id}">${ico(P.visit, 12, '#fff')} Ghi nhật ký</button>
+      <button class="btn bg bsm" onclick="window.location.href='tel:${c.sdt}'">${ico(P.phone, 12)}</button>
+      ${c.lat ? `<button class="btn bgr bsm" data-checkin="${c.id}">${ico(P.ci, 12)}</button>` : ''}
+      <button class="btn bdr bsm" style="width:30px;padding:0" data-del-cust="${c.id}">${ico(P.trash, 12)}</button>
+    </div>
+  </div>`;
+}
+
+// ── VISITS ──
+function scrVisits() {
+  const v = ST.visits;
+  const mn = v.filter(x => x.m === CUR_MONTH && x.y === CUR_YEAR);
+  return `
+  <div class="sh">
+    <div>
+      <div class="sht">Nhật ký <em>làm việc</em></div>
+      <div class="shs">T${CUR_MONTH}: ${mn.length} lần · DS ${fmtN(mn.reduce((s,x)=>s+parseFloat(x.dsApollo||0),0))} thùng</div>
+    </div>
+    <button class="btn bp bsm" id="addVisitBtn">${ico(P.plus, 13, '#fff')} Ghi mới</button>
+  </div>
+  ${v.length === 0
+    ? `<div class="es"><div class="ei">${ico(P.visit, 22, '#506080')}</div><p style="font-size:12px;font-weight:600;color:var(--tx2)">Chưa có nhật ký</p></div>`
+    : v.map(x => buildVisitCard(x, true)).join('')
+  }
+  <div style="height:8px"></div>`;
+}
+
+function buildVisitCard(x, showDel = false) {
+  const rCls = x.ketQua === 'Tích cực' || x.ketQua === 'Đã chốt đơn' ? 'gr' : x.ketQua === 'Cần follow' ? 'gd' : x.ketQua === 'Không quan tâm' ? 'rd' : '';
+  return `
+  <div class="vc">
+    <div class="vch">
+      <div>
+        <div class="vcn">${x.tenKH || x.maKH || '–'}</div>
+        <div style="font-size:10px;color:var(--tx3);margin-top:1px">📅 ${x.ngay || '–'} · ${x.hinhThuc || '–'} · ${x.tinh || '–'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span class="tag ${rCls}">${x.ketQua || '–'}</span>
+        ${showDel ? `<button class="btn bdr bsm" style="width:27px;padding:0" data-del-visit="${x.id}">${ico(P.trash, 11)}</button>` : ''}
+      </div>
+    </div>
+    <div class="vcnote">${x.thongTin || '(Không có ghi chú)'}</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+      ${x.dsApollo ? `<span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--cy)">${fmtN(x.dsApollo)} thùng</span>` : ''}
+      ${x.maHangApollo ? `<span class="tag">${x.maHangApollo}</span>` : ''}
+      ${x.doiThu ? `<span class="tag rd">${x.doiThu}</span>` : ''}
+      ${x.mau ? `<span class="tag pu">Mẫu: ${x.mau}(${x.slMau}c)</span>` : ''}
+      ${x.checkIn ? `<span class="ci-badge">${ico(P.gps, 10, 'var(--gr)')} Check-in ${x.checkInTime || ''}</span>` : ''}
+    </div>
+  </div>`;
+}
+
+// ── MAP ──
+function scrMap() {
+  return `
+  <div class="sh">
+    <div>
+      <div class="sht">Bản đồ <em>khách hàng</em></div>
+      <div class="shs">${ST.custs.filter(c => c.lat).length} KH có tọa độ GPS</div>
+    </div>
+    <button class="btn bgr bsm" id="locateBtn">${ico(P.gps, 13)} Vị trí tôi</button>
+  </div>
+  <div id="mapWrap">
+    <div style="display:flex;align-items:center;justify-content:center;height:100%;gap:8px;color:var(--tx3);font-size:12px">
+      <div class="spinner"></div> Đang tải bản đồ...
+    </div>
+  </div>
+  ${ST.gpsState === 'ok' && ST.nearby.length > 0 ? `
+  <div class="sh" style="padding-top:8px;padding-bottom:4px">
+    <div class="sht">KH <em>gần nhất</em></div>
+  </div>
+  ${ST.nearby.slice(0, 6).map(x => `
+    <div class="nearby-item" data-nearby-cust="${x.c.id}">
+      <div class="nd">${x.km < 1 ? Math.round(x.km * 1000) + 'm' : x.km.toFixed(1) + 'km'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.c.ten}</div>
+        <div style="font-size:10px;color:var(--tx3)">${x.c.loai || ''} · ${x.c.tinh || ''}</div>
+      </div>
+      <button class="btn bp bsm" data-checkin="${x.c.id}">${ico(P.ci, 12, '#fff')} Check-in</button>
+    </div>
+  `).join('')}` : ''}
+  <div style="height:8px"></div>`;
+}
+
+function initMap() {
+  if (ST.mapInited) return;
+  const wrap = document.getElementById('mapWrap');
+  if (!wrap) return;
+  wrap.innerHTML = '<div id="mapEl" style="height:100%;width:100%"></div>';
+
+  const center = ST.gps ? [ST.gps.lat, ST.gps.lng] : [21.028, 105.834];
+  ST.leafMap = L.map('mapEl', { zoomControl: true, attributionControl: false }).setView(center, 11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(ST.leafMap);
+
+  // Customer markers
+  ST.custs.filter(c => c.lat && c.lng).forEach(c => {
+    const m = L.divIcon({
+      html: `<div style="width:26px;height:26px;border-radius:50%;background:${c.color||'#1a6ff5'};border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.4)">${(c.ten||'?').charAt(0)}</div>`,
+      className: '', iconAnchor: [13, 13]
+    });
+    L.marker([parseFloat(c.lat), parseFloat(c.lng)], { icon: m })
+      .addTo(ST.leafMap)
+      .bindPopup(`<b>${c.ten}</b><br><small>${c.loai||''} · ${c.tinh||''}</small>`);
+  });
+
+  // My location
+  if (ST.gps) {
+    const meIcon = L.divIcon({
+      html: `<div style="width:16px;height:16px;border-radius:50%;background:var(--cy);border:3px solid #fff;box-shadow:0 0 10px var(--cy)"></div>`,
+      className: '', iconAnchor: [8, 8]
+    });
+    L.marker([ST.gps.lat, ST.gps.lng], { icon: meIcon }).addTo(ST.leafMap).bindPopup('📍 Vị trí của tôi');
+    L.circle([ST.gps.lat, ST.gps.lng], { radius: ST.gps.accuracy, color: '#00d4ff', fillOpacity: 0.07, weight: 1 }).addTo(ST.leafMap);
+  }
+  ST.mapInited = true;
+}
+
+// ── CFG ──
+function scrCfg() {
+  const u = ST.user;
+  const hist = DB.g('apSyncHist', []);
+  return `
+  <div class="sh"><div class="sht">Cài <em>đặt</em></div></div>
+  <div style="padding:0 12px 12px">
+
+    <div class="card" style="margin:0 0 10px">
+      <div style="font-size:11px;font-weight:700;color:var(--cy);margin-bottom:10px">${ico(P.lock, 13, 'var(--cy)')} TÀI KHOẢN</div>
+      ${[['Họ tên', u.name],['Email', u.email],['Team', u.team],['Vai trò', u.role],['Tỉnh phụ trách', u.provinces.join(', ')]].map(([l,v]) => `<div class="hrow"><span style="font-size:11px;color:var(--tx3)">${l}</span><span style="font-size:11px;font-weight:600;text-align:right;max-width:65%">${v}</span></div>`).join('')}
+    </div>
+
+    <div class="card" style="margin:0 0 10px">
+      <div style="font-size:11px;font-weight:700;color:var(--gr);margin-bottom:10px">${ico(P.gps, 13, 'var(--gr)')} GPS & VỊ TRÍ</div>
+      <div style="font-size:12px;color:var(--tx2);margin-bottom:10px">
+        ${ST.gpsState === 'ok' ? `✅ GPS OK · ${ST.custs.filter(c=>c.lat).length} KH có tọa độ · ${ST.nearby.length} KH gần hiện tại` : 'GPS chưa bật. Nhấn bật để sử dụng các tính năng bản đồ.'}
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn bgr bmd" style="flex:1" id="locateBtn">${ico(P.gps, 14)} ${ST.gpsState === 'ok' ? 'Cập nhật vị trí' : 'Bật GPS'}</button>
+        <button class="btn bpu bmd" style="flex:1" id="geocodeBtn">${ico(P.map, 14)} Geocode KH (${ST.custs.filter(c=>!c.lat&&c.diaChi).length} chờ)</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin:0 0 10px">
+      <div style="font-size:11px;font-weight:700;color:var(--cy);margin-bottom:10px">${ico(P.sync, 13, 'var(--cy)')} GOOGLE SHEETS SYNC</div>
+      <div class="fg">
+        <label class="fl">Apps Script Web App URL</label>
+        <input class="fi" id="cfgGasUrl" value="${ST.gasUrl}" placeholder="https://script.google.com/macros/s/...">
+      </div>
+      <button class="btn bp blg" id="cfgSaveGas">${ico(P.check, 15, '#fff')} Lưu & Sync ngay</button>
+      ${!ST.gasUrl ? `<div class="ibox" style="margin-top:10px">${ico(P.info,12)} Chưa có URL. Làm theo hướng dẫn bên dưới để kết nối file Excel với app.</div>` : ''}
+      ${hist.length ? `
+        <div style="font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px">Lịch sử</div>
+        ${hist.slice(0,4).map(h => `<div class="hrow"><span style="font-size:11px;color:var(--tx2)">${h.time}</span><span style="font-size:11px;font-weight:700;color:var(--gr)">${h.rows}</span></div>`).join('')}
+      ` : ''}
+    </div>
+
+    <div class="card" style="margin:0 0 10px">
+      <div style="font-size:11px;font-weight:700;color:var(--gd);margin-bottom:12px">${ico(P.copy, 13, 'var(--gd)')} APPS SCRIPT CODE</div>
+      <div style="font-size:11px;color:var(--tx2);margin-bottom:10px;line-height:1.6">
+        <strong style="color:var(--tx)">Bước 1:</strong> Import file <code style="background:var(--bg2);padding:1px 5px;border-radius:4px">Theo_doi_dt.xlsx</code> lên Google Drive<br>
+        <strong style="color:var(--tx)">Bước 2:</strong> Extensions → Apps Script → Dán code bên dưới → Lưu<br>
+        <strong style="color:var(--tx)">Bước 3:</strong> Deploy → New deployment → Web app → Anyone → Deploy<br>
+        <strong style="color:var(--tx)">Bước 4:</strong> Copy URL → Dán vào ô trên → Sync
+      </div>
+      <div class="cblk">${GAS_CODE}</div>
+      <button class="btn bg bsm" style="margin-top:8px;width:100%;justify-content:center;font-size:11px;padding:9px" id="cfgCopyGas">${ico(P.copy,12)} Copy code</button>
+    </div>
+
+    <div class="card" style="margin:0">
+      <div style="font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:10px">ℹ️ Thông tin ứng dụng</div>
+      ${[['Phiên bản','Apollo CRM Pro v4.1'],['Người dùng',u.name+' ('+u.role+')'],['Khách hàng',ST.custs.length+' bản ghi'],['Nhật ký',ST.visits.length+' bản ghi'],['GPS',ST.custs.filter(c=>c.lat).length+' KH có tọa độ'],['Sheets',ST.gasUrl?'✅ Đã cấu hình':'⚠️ Chưa cấu hình']].map(([l,v]) => `<div class="hrow"><span style="font-size:11px;color:var(--tx3)">${l}</span><span style="font-size:11px;font-weight:600">${v}</span></div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function cfgSaveGas() {
+  const url = vv('cfgGasUrl');
+  ST.gasUrl = url; DB.s('apGas', url);
+  if (url) doSync(); else toast('Đã xóa URL', 'inf');
+}
+
+// ════════════════════════════════════════
+//  MODALS
+// ════════════════════════════════════════
+function buildModal() {
+  const { type, data } = ST.modal;
+  let content = '';
+  if      (type === 'addCust')  content = modalCust(data, false);
+  else if (type === 'editCust') content = modalCust(data, true);
+  else if (type === 'addVisit') content = modalVisit(data);
+  else if (type === 'checkIn')  content = modalCheckIn(data);
+  return `<div class="ov" id="ovBg"><div class="mod" id="modInner">${content}</div></div>`;
+}
+
+function bindModal() {
+  document.getElementById('ovBg')?.addEventListener('click', e => {
+    if (e.target.id === 'ovBg') closeModal();
+  });
+  document.getElementById('modClose')?.addEventListener('click', closeModal);
+
+  // Customer form
+  document.getElementById('saveCustBtn')?.addEventListener('click', () => saveCust(ST.modal?.data?.id || null));
+  document.getElementById('addCompBtn')?.addEventListener('click', () => {
+    FRM.comps.push({ name: '', ds: '' });
+    document.getElementById('compList').innerHTML = FRM.comps.map((r, i) => compRow(r, i)).join('');
+  });
+  document.getElementById('addSampleBtn')?.addEventListener('click', () => {
+    FRM.samples.push({ ma: '', sl: '' });
+    document.getElementById('sampleList').innerHTML = FRM.samples.map((r, i) => sampleRow(r, i)).join('');
+  });
+  document.querySelectorAll('[data-rm-comp]').forEach(el => el.addEventListener('click', () => {
+    FRM.comps.splice(parseInt(el.dataset.rmComp), 1);
+    document.getElementById('compList').innerHTML = FRM.comps.map((r, i) => compRow(r, i)).join('');
+  }));
+  document.querySelectorAll('[data-rm-sample]').forEach(el => el.addEventListener('click', () => {
+    FRM.samples.splice(parseInt(el.dataset.rmSample), 1);
+    document.getElementById('sampleList').innerHTML = FRM.samples.map((r, i) => sampleRow(r, i)).join('');
+  }));
+  document.querySelectorAll('[data-set-new]').forEach(el => el.addEventListener('click', () => setNewOld(el.dataset.setNew === '1')));
+  document.querySelectorAll('[data-set-ht]').forEach(el => el.addEventListener('click', () => setHT(el.dataset.setHt)));
+  document.getElementById('gpsFormBtn')?.addEventListener('click', gpsForForm);
+
+  // Visit form
+  document.getElementById('saveVisitBtn')?.addEventListener('click', saveVisit);
+  document.getElementById('custSelectChange')?.addEventListener('change', e => onCustChange(parseInt(e.target.value)));
+  document.getElementById('checkInBtn')?.addEventListener('click', doCheckIn);
+
+  // Delete from modal
+  document.querySelectorAll('[data-del-cust][data-from-modal]').forEach(el => el.addEventListener('click', () => {
+    if (confirm('Xóa KH?')) { ST.custs = ST.custs.filter(c => c.id !== parseInt(el.dataset.delCust)); save(); closeModal(); render(); toast('Đã xóa KH'); }
+  }));
+
+  // Check-in confirm
+  document.getElementById('confirmCiBtn')?.addEventListener('click', () => confirmCheckIn(ST.modal?.data?.custId));
+  document.getElementById('ciVisitBtn')?.addEventListener('click', () => { const id = ST.modal?.data?.custId; closeModal(); openAddVisit(id); });
+}
+
+const mHead = (title) => `<div class="mhd"><div class="mti">${title}</div><div class="mcl" id="modClose">${ico(P.close, 15, '#506080')}</div></div>`;
+
+function modalCust(d = {}, isEdit) {
+  const pOpts = [...new Set([...ST.user.provinces, ...ALL_PROVS])].map(p => `<option ${(d.tinh || ST.user.provinces[0]) === p ? 'selected' : ''}>${p}</option>`).join('');
+  const maOpts = MA_APOLLO.map(x => `<option ${(d.maThayThe||'') === x ? 'selected':''}>${x}</option>`).join('');
+  const gpsLbl = d.lat ? `✅ ${parseFloat(d.lat).toFixed(4)}, ${parseFloat(d.lng).toFixed(4)}` : 'Chưa có GPS';
+
+  return `
+  ${mHead(isEdit ? `✏️ ${d.ten}` : '➕ Thêm khách hàng')}
+  ${isEdit ? `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--cy2);border:1px solid rgba(0,212,255,.2);border-radius:8px;margin-bottom:12px"><span style="font-size:10px;color:var(--tx3);font-weight:700">MÃ KH</span><span class="kh-code">${d.ma||'–'}</span><span style="font-size:10px;color:var(--tx3);margin-left:auto">Tạo: ${d.createdAt||'–'}</span></div>` : '<div class="ibox" style="margin-bottom:12px">Mã KH sẽ tự động sinh (KH-0001, KH-0002...)</div>'}
+
+  <div class="fsec">${ico(P.cust,12,'var(--cy)')} Thông tin cơ bản</div>
+  <div class="fg"><label class="fl">Tên KH / Cửa hàng <span style="color:var(--rd)">*</span></label>
+    <input class="fi" id="fTen" value="${d.ten||''}" placeholder="CTY ABC / Cửa hàng XYZ..."
+      oninput="checkDup(this.value, document.getElementById('fSdt')?.value||'', ${d.id||'null'})">
+  </div>
+  <div id="dupBox"></div>
+  <div class="f2">
+    <div class="fg"><label class="fl">Loại hình</label>
+      <select class="fi" id="fLoai">${LOAI_HINH.map(x=>`<option ${(d.loai||'')===x?'selected':''}>${x}</option>`).join('')}</select></div>
+    <div class="fg"><label class="fl">KH Mới/Cũ</label>
+      <div class="tg-row">
+        <div class="tg ${d.isNew!==false?'gr':''}" id="tgNew" data-set-new="1">Mới</div>
+        <div class="tg ${d.isNew===false?'cy':''}" id="tgOld" data-set-new="0">Cũ</div>
+      </div>
+      <input type="hidden" id="fIsNew" value="${d.isNew!==false?'1':'0'}">
+    </div>
+  </div>
+  <div class="fg"><label class="fl">Số điện thoại</label>
+    <input class="fi" id="fSdt" type="tel" value="${d.sdt||''}" placeholder="0xxx xxx xxx"
+      oninput="checkDup(document.getElementById('fTen')?.value||'', this.value, ${d.id||'null'})"></div>
+  <div class="f2">
+    <div class="fg"><label class="fl">Tỉnh / Thành</label><select class="fi" id="fTinh">${pOpts}</select></div>
+    <div class="fg"><label class="fl">DS Apollo (thùng/th)</label><input class="fi" id="fDs" type="number" min="0" value="${d.dsApollo||''}" placeholder="0"></div>
+  </div>
+  <div class="f2">
+    <div class="fg"><label class="fl">Mục tiêu (thùng/th)</label><input class="fi" id="fTarget" type="number" min="0" value="${d.target||''}" placeholder="100"></div>
+    <div class="fg"><label class="fl">NPP lấy hàng</label><input class="fi" id="fNLH" value="${d.noiLayHang||''}" placeholder="Tên NPP..."></div>
+  </div>
+
+  <div class="fsec">${ico(P.rpt,12,'var(--cy)')} Đối thủ đang bán</div>
+  <div id="compList">${FRM.comps.map((r,i)=>compRow(r,i)).join('')}</div>
+  <button class="btn bg bsm" id="addCompBtn" style="margin-bottom:8px">${ico(P.plus,12)} Thêm đối thủ</button>
+
+  <div class="fsec">${ico(P.rpt,12,'var(--cy)')} Mẫu đã cấp</div>
+  <div id="sampleList">${FRM.samples.map((r,i)=>sampleRow(r,i)).join('')}</div>
+  <button class="btn bg bsm" id="addSampleBtn" style="margin-bottom:8px">${ico(P.plus,12)} Thêm mẫu</button>
+
+  <div class="fsec">Kế hoạch thay thế</div>
+  <div class="fg"><label class="fl">Hàng thay thế từ</label><input class="fi" id="fTTFrom" value="${d.ttFrom||''}" placeholder="Kollsea 300ml..."></div>
+  <div class="f2">
+    <div class="fg"><label class="fl">Mã Apollo thay thế</label><select class="fi" id="fTTMa"><option value="">– Chọn –</option>${maOpts}</select></div>
+    <div class="fg"><label class="fl">SL thay thế (thùng)</label><input class="fi" id="fTTSl" type="number" min="0" value="${d.slThayThe||''}"></div>
+  </div>
+  <div class="fg"><label class="fl">Mục tiêu thay thế</label><input class="fi" id="fTTTarget" type="number" min="0" value="${d.ttTarget||''}"></div>
+
+  <div class="fsec">${ico(P.gps,12,'var(--cy)')} GPS & Làm việc</div>
+  <div class="fg">
+    <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid var(--ln2);border-radius:8px;padding:9px 12px">
+      <span id="gpsFormLbl" style="font-size:12px;color:${d.lat?'var(--gr)':'var(--tx3)'};flex:1">${gpsLbl}</span>
+      <button class="btn bgr bsm" id="gpsFormBtn">${ico(P.gps,12)} ${d.lat?'Cập nhật':'Lấy GPS'}</button>
+    </div>
+    <input type="hidden" id="fLat" value="${d.lat||''}">
+    <input type="hidden" id="fLng" value="${d.lng||''}">
+  </div>
+  <div class="fg"><label class="fl">Địa chỉ</label><input class="fi" id="fDiaChi" value="${d.diaChi||''}" placeholder="Địa chỉ cụ thể..."></div>
+  <div class="fg"><label class="fl">Hình thức làm việc</label>
+    <div class="tg-row">
+      <div class="tg ${(d.hinhThuc||'direct')==='direct'?'cy':''}" id="htD" data-set-ht="direct">🤝 Trực tiếp</div>
+      <div class="tg ${(d.hinhThuc||'')==='call'?'cy':''}" id="htC" data-set-ht="call">📞 Gọi điện</div>
+    </div>
+    <input type="hidden" id="fHT" value="${d.hinhThuc||'direct'}">
+  </div>
+  <div class="fg"><label class="fl">Thông tin làm việc</label><textarea class="fi" id="fTTLV">${d.ttLamViec||''}</textarea></div>
+  <div class="fg"><label class="fl">Ghi chú</label><textarea class="fi" id="fNote">${d.note||''}</textarea></div>
+
+  <button class="btn bp blg" id="saveCustBtn">${ico(P.check,15,'#fff')} ${isEdit?'Lưu thay đổi':'Thêm khách hàng'}</button>
+  ${isEdit ? `<button class="btn bdr blg" style="margin-top:7px" data-del-cust="${d.id}" data-from-modal="1">${ico(P.trash,14)} Xóa khách hàng này</button>` : ''}
+  <div style="height:16px"></div>`;
+}
+
+function compRow(r, i) {
+  return `<div class="comp-row">
+    <input class="fi" placeholder="Tên đối thủ" value="${r.name||''}" oninput="FRM.comps[${i}].name=this.value" style="flex:1">
+    <input class="fi" placeholder="DS thùng" type="number" min="0" value="${r.ds||''}" oninput="FRM.comps[${i}].ds=this.value" style="width:85px;flex:none">
+    <button class="btn bdr bsm" style="width:28px;padding:0;flex-shrink:0" data-rm-comp="${i}">${ico(P.trash,11)}</button>
+  </div>`;
+}
+function sampleRow(r, i) {
+  const opts = MA_APOLLO.map(x => `<option ${(r.ma||'')===x?'selected':''}>${x}</option>`).join('');
+  return `<div class="comp-row">
+    <select class="fi" style="flex:1;font-size:12px" onchange="FRM.samples[${i}].ma=this.value"><option value="">– Mã hàng –</option>${opts}</select>
+    <input class="fi" placeholder="SL chai" type="number" min="0" value="${r.sl||''}" oninput="FRM.samples[${i}].sl=this.value" style="width:80px;flex:none">
+    <button class="btn bdr bsm" style="width:28px;padding:0;flex-shrink:0" data-rm-sample="${i}">${ico(P.trash,11)}</button>
+  </div>`;
+}
+function setNewOld(isNew) {
+  document.getElementById('fIsNew').value = isNew ? '1' : '0';
+  document.getElementById('tgNew').className = 'tg ' + (isNew ? 'gr' : '');
+  document.getElementById('tgOld').className = 'tg ' + (!isNew ? 'cy' : '');
+}
+function setHT(ht) {
+  document.getElementById('fHT').value = ht;
+  document.getElementById('htD').className = 'tg ' + (ht === 'direct' ? 'cy' : '');
+  document.getElementById('htC').className = 'tg ' + (ht === 'call' ? 'cy' : '');
+}
+
+function modalVisit(d = {}) {
+  const custId = d.custId || null;
+  return `
+  ${mHead('📋 Ghi nhật ký làm việc')}
+  <div class="fsec">${ico(P.cust,12,'var(--cy)')} Khách hàng</div>
+  <div class="fg"><label class="fl">Chọn khách hàng <span style="color:var(--rd)">*</span></label>
+    <select class="fi" id="vCust" id="custSelectChange">
+      <option value="">– Chọn –</option>
+      ${ST.custs.map(c=>`<option value="${c.id}" ${custId===c.id?'selected':''}>${c.ma||''} · ${c.ten}</option>`).join('')}
+    </select>
+  </div>
+  <div class="f2">
+    <div class="fg"><label class="fl">Ngày làm việc</label><input class="fi" id="vNgay" value="${today()}"></div>
+    <div class="fg"><label class="fl">Hình thức</label><select class="fi" id="vHT">${HINH_THUC.map(x=>`<option>${x}</option>`).join('')}</select></div>
+  </div>
+  <div class="f2">
+    <div class="fg"><label class="fl">Tỉnh</label><input class="fi" id="vTinh" value="${ST.user.provinces[0]}"></div>
+    <div class="fg"><label class="fl">Loại hình KH</label><select class="fi" id="vLoai">${LOAI_HINH.map(x=>`<option>${x}</option>`).join('')}</select></div>
+  </div>
+  <div class="f2">
+    <div class="fg"><label class="fl">SĐT</label><input class="fi" id="vSdt" type="tel" placeholder="0xxx xxx xxx"></div>
+    <div class="fg"><label class="fl">KH Mới/Cũ</label><select class="fi" id="vKhMoi"><option>Cũ</option><option>Mới</option></select></div>
+  </div>
+
+  <div class="fsec">${ico(P.rpt,12,'var(--cy)')} Doanh số Apollo</div>
+  <div class="f2">
+    <div class="fg"><label class="fl">DS Apollo (thùng)</label><input class="fi" id="vDs" type="number" min="0" placeholder="0"></div>
+    <div class="fg"><label class="fl">Mã hàng Apollo</label><select class="fi" id="vMaHang"><option value="">– Chọn –</option>${MA_APOLLO.map(x=>`<option>${x}</option>`).join('')}</select></div>
+  </div>
+  <div class="f2">
+    <div class="fg"><label class="fl">Giá Apollo</label><input class="fi" id="vGiaApollo" type="number" min="0" placeholder="0"></div>
+    <div class="fg"><label class="fl">NPP lấy hàng</label><input class="fi" id="vNLH" placeholder="Tên NPP..."></div>
+  </div>
+
+  <div class="fsec">Thay thế & Đối thủ</div>
+  <div class="f2">
+    <div class="fg"><label class="fl">Mã thay thế</label><input class="fi" id="vMaTT" placeholder="Aposil..."></div>
+    <div class="fg"><label class="fl">Mục tiêu TT</label><input class="fi" id="vMTTT" type="number" min="0" placeholder="0"></div>
+  </div>
+  <div class="f2">
+    <div class="fg"><label class="fl">SL thay thế</label><input class="fi" id="vSlTT" type="number" min="0" placeholder="0"></div>
+    <div class="fg"><label class="fl">NPP</label><input class="fi" id="vNoi" placeholder="Nơi lấy hàng..."></div>
+  </div>
+  <div class="f2">
+    <div class="fg"><label class="fl">Đối thủ</label><input class="fi" id="vDT" placeholder="Kollsea..."></div>
+    <div class="fg"><label class="fl">DS đối thủ</label><input class="fi" id="vDsDT" type="number" min="0" placeholder="0"></div>
+  </div>
+  <div class="f2">
+    <div class="fg"><label class="fl">Mã đối thủ</label><input class="fi" id="vMaDT" placeholder="K500..."></div>
+    <div class="fg"><label class="fl">Giá đối thủ</label><input class="fi" id="vGiaDT" type="number" min="0" placeholder="0"></div>
+  </div>
+
+  <div class="fsec">Mẫu & Thông tin</div>
+  <div class="f2">
+    <div class="fg"><label class="fl">Mẫu cấp</label><input class="fi" id="vMau" placeholder="Tên mẫu..."></div>
+    <div class="fg"><label class="fl">SL mẫu (chai)</label><input class="fi" id="vSlMau" type="number" min="0" placeholder="0"></div>
+  </div>
+  <div class="fg"><label class="fl">Thông tin / Ghi chú <span style="color:var(--rd)">*</span></label>
+    <textarea class="fi" id="vThongTin" rows="3" placeholder="Nội dung làm việc, kết quả, bước tiếp theo..."></textarea></div>
+  <div class="fg"><label class="fl">Địa chỉ</label><input class="fi" id="vDiaChi" placeholder="Địa chỉ..."></div>
+
+  <div class="fg">
+    <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(34,211,164,.06);border:1px solid rgba(34,211,164,.2);border-radius:8px;padding:9px 12px">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--gr)">GPS Check-in</div>
+        <div id="ciStatusLbl" style="font-size:10px;color:var(--tx3)">${ST.gpsState==='ok'?`${ST.gps.lat.toFixed(4)}, ${ST.gps.lng.toFixed(4)}`:'Chưa check-in'}</div>
+      </div>
+      <button class="btn bgr bsm" id="checkInBtn">${ico(P.ci,12)} Check-in</button>
+    </div>
+    <input type="hidden" id="vLat" value="${ST.gpsState==='ok'?ST.gps.lat:''}">
+    <input type="hidden" id="vLng" value="${ST.gpsState==='ok'?ST.gps.lng:''}">
+    <input type="hidden" id="vCi"  value="${ST.gpsState==='ok'?'1':'0'}">
+  </div>
+
+  <button class="btn bp blg" id="saveVisitBtn">${ico(P.check,15,'#fff')} Lưu nhật ký</button>
+  <div style="height:16px"></div>`;
+}
+
+function modalCheckIn(d = {}) {
+  const c = ST.custs.find(x => x.id === d.custId);
+  const dist = c?.lat && ST.gps ? distKm(ST.gps.lat, ST.gps.lng, parseFloat(c.lat), parseFloat(c.lng)) : null;
+  return `
+  ${mHead(`📍 Check-in: ${c?.ten || '–'}`)}
+  <div style="text-align:center;padding:20px 0">
+    <div style="width:60px;height:60px;border-radius:50%;background:var(--gr2);border:2px solid rgba(34,211,164,.4);display:flex;align-items:center;justify-content:center;margin:0 auto 12px">${ico(P.gps,26,'var(--gr)')}</div>
+    <div style="font-size:14px;font-weight:700;margin-bottom:4px">${c?.ten||'–'}</div>
+    <div style="font-size:11px;color:var(--tx3)">${c?.tinh||''} · ${c?.loai||''}</div>
+    ${ST.gpsState==='ok'
+      ? `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cy);margin-top:10px">${ST.gps.lat.toFixed(5)}, ${ST.gps.lng.toFixed(5)}</div>
+         ${dist !== null ? `<div style="font-size:11px;color:var(--tx3);margin-top:4px">Khoảng cách: <strong style="color:var(--gd)">${dist.toFixed(2)} km</strong></div>` : ''}`
+      : '<div style="font-size:12px;color:var(--rd);margin-top:10px">GPS chưa hoạt động</div>'
+    }
+  </div>
+  <button class="btn bgr blg" id="confirmCiBtn">${ico(P.ci,16)} Xác nhận Check-in</button>
+  <button class="btn bp blg" style="margin-top:8px" id="ciVisitBtn">${ico(P.visit,15,'#fff')} Ghi nhật ký ngay</button>
+  <div style="height:12px"></div>`;
+}
+
+// ════════════════════════════════════════
+//  CUST ACTIONS
+// ════════════════════════════════════════
+function openAddCust() {
+  FRM = { comps: [{ name:'', ds:'' }], samples: [{ ma:'', sl:'' }] };
+  ST.modal = { type:'addCust', data:{} }; render();
+}
+function openEditCust(id) {
+  const c = ST.custs.find(x => x.id === id); if (!c) return;
+  FRM = {
+    comps:   c.comps?.length   ? JSON.parse(JSON.stringify(c.comps))   : [{ name:'', ds:'' }],
+    samples: c.samples?.length ? JSON.parse(JSON.stringify(c.samples)) : [{ ma:'', sl:'' }],
+  };
+  ST.modal = { type:'editCust', data: c }; render();
+}
+function openAddVisit(custId) {
+  ST.modal = { type:'addVisit', data:{ custId } }; render();
+}
+function openCheckIn(custId) {
+  if (ST.gpsState !== 'ok') locateMe();
+  ST.modal = { type:'checkIn', data:{ custId } }; render();
+}
+function closeModal() { FRM = {}; ST.modal = null; render(); }
+
+function collectCust() {
+  return {
+    ten:       vv('fTen'),
+    loai:      vv('fLoai'),
+    isNew:     document.getElementById('fIsNew')?.value === '1',
+    sdt:       vv('fSdt'),
+    tinh:      vv('fTinh'),
+    dsApollo:  vv('fDs'),
+    target:    vv('fTarget'),
+    noiLayHang:vv('fNLH'),
+    comps:     FRM.comps.filter(r => r.name),
+    samples:   FRM.samples.filter(r => r.ma),
+    ttFrom:    vv('fTTFrom'),
+    maThayThe: vv('fTTMa'),
+    slThayThe: vv('fTTSl'),
+    ttTarget:  vv('fTTTarget'),
+    lat:       vv('fLat'),
+    lng:       vv('fLng'),
+    diaChi:    vv('fDiaChi'),
+    hinhThuc:  vv('fHT'),
+    ttLamViec: vv('fTTLV'),
+    note:      vv('fNote'),
+  };
+}
+function saveCust(editId) {
+  const d = collectCust();
+  if (!d.ten) { toast('Nhập tên khách hàng!', 'err'); return; }
+  // Dup check
+  const dups = ST.custs.filter(c => {
+    if (editId && c.id === editId) return false;
+    return simScore(d.ten, c.ten) > 0.6 || (d.sdt && c.sdt && d.sdt.replace(/\s/g,'') === (c.sdt||'').replace(/\s/g,''));
+  });
+  if (dups.length && !confirm(`⚠️ Phát hiện KH tương tự "${dups[0].ten}" (${dups[0].ma||'–'}). Vẫn lưu?`)) return;
+
+  if (editId) {
+    ST.custs = ST.custs.map(c => c.id === editId ? { ...c, ...d } : c);
+    save(); closeModal(); render(); toast('✅ Đã cập nhật KH!');
+  } else {
+    const ma = nextKhCode();
+    const nc = { id: Date.now(), ma, ...d, status:'warm', lastVisit:'–', createdAt: today(), color: COLORS[ST.custs.length % COLORS.length], kd: ST.user.name };
+    ST.custs.unshift(nc);
+    save(); closeModal(); render(); toast(`✅ Đã thêm KH · ${ma}`);
+  }
+}
+
+function checkDup(name, sdt, excludeId) {
+  const el = document.getElementById('dupBox'); if (!el) return;
+  if (!name || name.length < 3) { el.innerHTML = ''; return; }
+  const dups = ST.custs.filter(c => {
+    if (excludeId && c.id === excludeId) return false;
+    const ns = simScore(name, c.ten) > 0.5;
+    const ps = sdt && c.sdt && sdt.replace(/\s/g,'') === (c.sdt||'').replace(/\s/g,'');
+    return ns || ps;
+  }).slice(0, 3);
+  if (!dups.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="dup-warn">
+    <div style="font-size:11px;font-weight:700;color:var(--gd);margin-bottom:7px">${ico(P.info,12,'var(--gd)')} ${dups.length} KH có thể trùng — nhấn để mở thay vì tạo mới</div>
+    ${dups.map(c => `<div class="dup-item" onclick="closeModal();openEditCust(${c.id})">
+      <div style="width:28px;height:28px;border-radius:7px;background:${c.color}22;color:${c.color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">${(c.ten||'?').charAt(0)}</div>
+      <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.ten}</div><div style="font-size:10px;color:var(--tx3)">${c.ma||'–'} · ${c.sdt||'–'} · ${c.tinh||'–'}</div></div>
+      <span style="font-size:9px;padding:2px 6px;border-radius:10px;font-weight:700;background:rgba(255,183,3,.15);color:var(--gd);border:1px solid rgba(255,183,3,.3);white-space:nowrap">${sdt&&c.sdt&&sdt.replace(/\s/g,'')===(c.sdt||'').replace(/\s/g,'')&&sdt?'SĐT trùng':'Tên giống'}</span>
+    </div>`).join('')}
+    <div style="font-size:10px;color:var(--tx3);margin-top:5px">Nhấn KH trên để chỉnh sửa thay vì tạo bản sao</div>
+  </div>`;
+}
+
+function gpsForForm() {
+  const lbl = document.getElementById('gpsFormLbl');
+  if (lbl) lbl.textContent = 'Đang lấy vị trí...';
+  navigator.geolocation.getCurrentPosition(pos => {
+    const lat = pos.coords.latitude, lng = pos.coords.longitude;
+    document.getElementById('fLat').value = lat;
+    document.getElementById('fLng').value = lng;
+    if (lbl) lbl.textContent = `✅ ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    toast('✅ Đã lấy GPS!');
+    // Auto-fill province
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=vi`)
+      .then(r => r.json()).then(data => {
+        const addr = data.display_name || '';
+        const dEl = document.getElementById('fDiaChi');
+        if (dEl && !dEl.value) dEl.value = addr;
+        const pEl = document.getElementById('fTinh');
+        if (pEl && addr) {
+          const found = ALL_PROVS.find(p => addr.includes(p));
+          if (found) Array.from(pEl.options).forEach(o => { if (o.value === found) o.selected = true; });
+        }
+      }).catch(() => {});
+  }, err => { toast('Lỗi GPS: ' + err.message, 'err'); }, { timeout: 10000, enableHighAccuracy: true });
+}
+
+// ════════════════════════════════════════
+//  VISIT ACTIONS
+// ════════════════════════════════════════
+function onCustChange(custId) {
+  const c = ST.custs.find(x => x.id === custId); if (!c) return;
+  const el1 = document.getElementById('vSdt'); if (el1 && !el1.value) el1.value = c.sdt || '';
+  const el2 = document.getElementById('vTinh'); if (el2) el2.value = c.tinh || ST.user.provinces[0];
+  const el3 = document.getElementById('vLoai'); if (el3) el3.value = c.loai || '';
+}
+function doCheckIn() {
+  navigator.geolocation.getCurrentPosition(pos => {
+    const lat = pos.coords.latitude, lng = pos.coords.longitude;
+    document.getElementById('vLat').value = lat;
+    document.getElementById('vLng').value = lng;
+    document.getElementById('vCi').value = '1';
+    const lbl = document.getElementById('ciStatusLbl');
+    if (lbl) lbl.textContent = `✅ ${lat.toFixed(4)}, ${lng.toFixed(4)} · ${new Date().toLocaleTimeString('vi-VN')}`;
+    toast('✅ Check-in OK!');
+  }, err => toast('GPS lỗi: ' + err.message, 'err'), { timeout: 8000, enableHighAccuracy: true });
+}
+function saveVisit() {
+  const custId = parseInt(vv('vCust') || document.getElementById('vCust')?.value || '0');
+  if (!custId) { toast('Chọn khách hàng!', 'err'); return; }
+  const thongTin = vv('vThongTin');
+  if (!thongTin) { toast('Nhập thông tin làm việc!', 'err'); return; }
+  const cust = ST.custs.find(x => x.id === custId);
+  const now = new Date();
+  const v = {
+    id: Date.now(), custId,
+    tenKH: cust?.ten || '', maKH: cust?.ma || '',
+    ngay: vv('vNgay'), hinhThuc: vv('vHT'), tinh: vv('vTinh'),
+    loai: vv('vLoai'), sdt: vv('vSdt'), khLoai: vv('vKhMoi'),
+    dsApollo: parseFloat(vv('vDs')) || 0,
+    maHangApollo: vv('vMaHang'), giaApollo: vv('vGiaApollo'),
+    maTT: vv('vMaTT'), slTT: vv('vSlTT'), mtTT: vv('vMTTT'),
+    noiLayHang: vv('vNoi'),
+    doiThu: vv('vDT'), maDT: vv('vMaDT'), dsDT: vv('vDsDT'), giaDT: vv('vGiaDT'),
+    thongTin, diaChi: vv('vDiaChi'),
+    mau: vv('vMau'), slMau: vv('vSlMau'),
+    checkIn: document.getElementById('vCi')?.value === '1',
+    checkInTime: document.getElementById('vCi')?.value === '1' ? new Date().toLocaleTimeString('vi-VN') : '',
+    lat: vv('vLat'), lng: vv('vLng'),
+    tgNhap: nowStr(),
+    m: now.getMonth() + 1, y: now.getFullYear(),
+    tenKD: ST.user.name,
+    ketQua: parseFloat(vv('vDs')) > 0 ? 'Tích cực' : 'Cần follow',
+  };
+  ST.visits.unshift(v);
+  // Update customer lastVisit
+  if (cust) {
+    ST.custs = ST.custs.map(c => c.id === custId ? { ...c, lastVisit: v.ngay } : c);
+  }
+  save();
+  closeModal();
+  if (ST.gasUrl) pushVisit(v);
+  render();
+  toast('✅ Đã lưu nhật ký!');
+}
+function confirmCheckIn(custId) {
+  const c = ST.custs.find(x => x.id === custId); if (!c) return;
+  const t = new Date().toLocaleTimeString('vi-VN');
+  ST.custs = ST.custs.map(x => x.id === custId
+    ? { ...x, lastVisit: today(), lastCheckIn: t, lat: ST.gps?.lat || x.lat, lng: ST.gps?.lng || x.lng }
+    : x
+  );
+  save(); closeModal(); render(); toast(`✅ Check-in ${c.ten} lúc ${t}`);
+}
+
+// ════════════════════════════════════════
+//  GPS
+// ════════════════════════════════════════
+function locateMe() {
+  ST.gpsState = 'loading';
+  // Update GPS bar immediately
+  const dot = document.querySelector('.gps-dot');
+  if (dot) { dot.className = 'gps-dot gps-ld'; }
+  const txt = document.querySelector('.gps-txt');
+  if (txt) txt.textContent = 'Đang lấy vị trí...';
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      ST.gps = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy };
+      ST.gpsState = 'ok';
+      computeNearby();
+      reScr();
+      if (ST.scr === 'map') setTimeout(initMap, 200);
+      toast(`✅ GPS OK · ±${Math.round(pos.coords.accuracy)}m · ${ST.nearby.length} KH gần`);
+    },
+    err => { ST.gpsState = 'off'; reScr(); toast('Không lấy được GPS', 'err'); },
+    { timeout: 12000, enableHighAccuracy: true, maximumAge: 30000 }
+  );
+}
+function computeNearby() {
+  if (!ST.gps) return;
+  ST.nearby = ST.custs
+    .filter(c => c.lat && c.lng)
+    .map(c => ({ c, km: distKm(ST.gps.lat, ST.gps.lng, parseFloat(c.lat), parseFloat(c.lng)) }))
+    .filter(x => x.km <= 50)
+    .sort((a, b) => a.km - b.km)
+    .slice(0, 10);
+}
+async function geocodeAll() {
+  const need = ST.custs.filter(c => c.diaChi && !c.lat).slice(0, 20);
+  if (!need.length) { toast('Không có KH nào cần geocode', 'inf'); return; }
+  toast(`Đang geocode ${need.length} KH...`, 'inf');
+  let done = 0;
+  for (const c of need) {
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(c.diaChi)}&format=json&limit=1`);
+      const data = await r.json();
+      if (data[0]) {
+        ST.custs = ST.custs.map(x => x.id === c.id ? { ...x, lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) } : x);
+        done++;
+      }
+      await new Promise(r => setTimeout(r, 350)); // rate limit
+    } catch {}
+  }
+  save(); computeNearby(); reScr(); toast(`✅ Geocode xong ${done} KH!`);
+}
+
+// ════════════════════════════════════════
+//  SYNC (Google Sheets)
+// ════════════════════════════════════════
+async function doSync() {
+  if (!ST.gasUrl) { toast('Chưa cấu hình URL Sheets', 'err'); return; }
+  ST.sync = 'syncing';
+  const btn = document.getElementById('syncBtn');
+  if (btn) { btn.className = 'hbtn go'; btn.innerHTML = ico(P.sync,12) + ' Sync...'; }
+
+  try {
+    // Pull customers & targets
+    const url = ST.gasUrl + '?action=getData&kd=' + encodeURIComponent(ST.user.name) + '&email=' + encodeURIComponent(ST.user.email);
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.customers?.length) {
+        // Merge: keep local extra fields, load base from server
+        const localById = {};
+        ST.custs.forEach(c => { localById[c.ma || c.id] = c; });
+        const merged = data.customers.map((sc, i) => {
+          const key = sc.ma || sc.ten;
+          const local = Object.values(localById).find(l => l.ma === sc.ma || (sc.ten && simScore(l.ten||'', sc.ten) > 0.9));
+          return local ? { ...sc, ...local, id: local.id } : { ...sc, id: Date.now()+i, color: COLORS[i%COLORS.length], status:'warm', lastVisit:'–', createdAt: today() };
+        });
+        ST.custs = merged;
+      }
+    }
+  } catch {}
+
+  // Push local visits to Sheets
+  await pushAllVisits();
+
+  ST.sync = 'ok';
+  save();
+  const now = new Date().toLocaleString('vi-VN');
+  const hist = DB.g('apSyncHist', []);
+  hist.unshift({ time: now, rows: `${ST.custs.length} KH · ${ST.visits.length} VT` });
+  DB.s('apSyncHist', hist.slice(0, 10));
+
+  if (btn) { btn.className = 'hbtn ok'; btn.innerHTML = ico(P.sync,12) + ' Synced ✓'; }
+  setTimeout(() => {
+    ST.sync = 'idle';
+    const b = document.getElementById('syncBtn');
+    if (b) { b.className = 'hbtn'; b.innerHTML = ico(P.sync,12) + ' Sync'; }
+  }, 5000);
+  toast(`✅ Sync xong · ${ST.custs.length} KH`);
+  reScr();
+}
+
+async function pushAllVisits() {
+  if (!ST.gasUrl || !ST.visits.length) return;
+  const payload = {
+    action: 'syncVisits',
+    visits: ST.visits.map(v => toSheetRow(v))
+  };
+  try { await fetch(ST.gasUrl, { method: 'POST', body: JSON.stringify(payload), mode: 'no-cors' }); } catch {}
+}
+async function pushVisit(v) {
+  if (!ST.gasUrl) return;
+  try { await fetch(ST.gasUrl, { method: 'POST', body: JSON.stringify({ action: 'addVisit', row: toSheetRow(v) }), mode: 'no-cors' }); } catch {}
+}
+function toSheetRow(v) {
+  return {
+    'Ngày Làm Việc': v.ngay, 'Hình Thức LV': v.hinhThuc, 'Tỉnh': v.tinh,
+    'Tên KD': v.tenKD || ST.user.name,
+    'Mã Khách Hàng': v.maKH, 'Tên Khách Hàng': v.tenKH,
+    'Loại Hình': v.loai, 'KH Mới/Cũ': v.khLoai, 'SĐT': v.sdt,
+    'DS APOLLO': v.dsApollo, 'Mã Hàng APOLLO': v.maHangApollo, 'GIá APOLLO': v.giaApollo,
+    'Mã Thay Thế': v.maTT, 'Mục Tiêu TT': v.mtTT,
+    'Nơi Lấy Hàng': v.noiLayHang, 'SL Thay Thế': v.slTT,
+    'Đối Thủ': v.doiThu, 'Mã Đối Thủ': v.maDT, 'DS Đối Thủ': v.dsDT, 'Giá đối thủ': v.giaDT,
+    'Thông Tin ': v.thongTin, 'Địa Chỉ': v.diaChi,
+    'Mẫu': v.mau, 'Số Lượng ( Chai)': v.slMau,
+    'TG Nhập': v.tgNhap || nowStr(),
+  };
+}
+
+// ════════════════════════════════════════
+//  GAS CODE
+// ════════════════════════════════════════
+const GAS_CODE = `function doGet(e) {
+  const kd = e.parameter.kd || '';
+  const email = e.parameter.email || '';
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const result = { customers: [], targets: {} };
+
+  // Get user name from Danh_Ba
+  const db = ss.getSheetByName('Danh_Ba');
+  if (db) {
+    const rows = db.getDataRange().getValues();
+    const mailCol = rows[0].indexOf('Mail');
+    const nameCol = rows[0].indexOf('Tên Kinh Doanh');
+    for (let i = 1; i < rows.length; i++) {
+      if (rows[i][mailCol] === email) { var userName = rows[i][nameCol]; break; }
+    }
+  }
+  const uName = userName || kd;
+
+  // Get customers
+  const sh = ss.getSheetByName('Data_Khach');
+  if (sh) {
+    const rows = sh.getDataRange().getValues();
+    const h = rows[0];
+    const iKD=h.indexOf('KD'),iMa=h.indexOf('Mã'),iTen=h.indexOf('Tên');
+    const iLoai=h.indexOf('Loại Hình Kinh Doanh'),iSdt=h.indexOf('SĐT');
+    const iTinh=h.indexOf('Tỉnh'),iAddr=h.indexOf('Địa chỉ');
+    for (let i=1;i<rows.length;i++) {
+      if (String(rows[i][iKD]).trim() !== uName) continue;
+      result.customers.push({
+        ma: String(rows[i][iMa]||''), ten: String(rows[i][iTen]||''),
+        loai: String(rows[i][iLoai]||''), sdt: String(rows[i][iSdt]||''),
+        tinh: String(rows[i][iTinh]||''), diaChi: String(rows[i][iAddr]||''), kd: uName
+      });
+    }
+  }
+
+  // Get target for current month
+  const tsh = ss.getSheetByName('Target');
+  if (tsh) {
+    const rows = tsh.getDataRange().getValues();
+    const h = rows[0]; // Team, Tên KD, Sản phẩm, T1..T12
+    let curKD='';
+    const month = new Date().getMonth()+1;
+    for (let i=1;i<rows.length;i++) {
+      const r=rows[i];
+      if (r[1]) curKD = String(r[1]).trim();
+      if (curKD !== uName) continue;
+      const prod = String(r[2]||'');
+      if (!result.targets[uName]) result.targets[uName]={};
+      result.targets[uName]['T'+month] = result.targets[uName]['T'+month]||{};
+      result.targets[uName]['T'+month][prod] = r[month+2]||0;
+    }
+  }
+
+  return ContentService.createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    const d = JSON.parse(e.postData.contents);
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sh = ss.getSheetByName('Nhatky') || ss.insertSheet('Nhatky');
+    if (sh.getLastRow() < 1) {
+      sh.appendRow(['Ngày Làm Việc','Hình Thức LV','Tỉnh','Tên KD',
+        'Mã Khách Hàng','Tên Khách Hàng','Loại Hình','KH Mới/Cũ','SĐT',
+        'DS APOLLO','Mã Hàng APOLLO','GIá APOLLO','Mã Thay Thế','Mục Tiêu TT',
+        'Nơi Lấy Hàng','SL Thay Thế','Đối Thủ','Mã Đối Thủ','DS Đối Thủ',
+        'Giá đối thủ','Thông Tin ','Địa Chỉ','Mẫu','Số Lượng ( Chai)','TG Nhập']);
+    }
+    const rows = d.action==='addVisit' ? [d.row] : (d.visits||[]);
+    rows.forEach(r => sh.appendRow([
+      r['Ngày Làm Việc']||'',r['Hình Thức LV']||'',r['Tỉnh']||'',r['Tên KD']||'',
+      r['Mã Khách Hàng']||'',r['Tên Khách Hàng']||'',r['Loại Hình']||'',r['KH Mới/Cũ']||'',r['SĐT']||'',
+      r['DS APOLLO']||0,r['Mã Hàng APOLLO']||'',r['GIá APOLLO']||0,
+      r['Mã Thay Thế']||'',r['Mục Tiêu TT']||0,r['Nơi Lấy Hàng']||'',r['SL Thay Thế']||0,
+      r['Đối Thủ']||'',r['Mã Đối Thủ']||'',r['DS Đối Thủ']||0,r['Giá đối thủ']||0,
+      r['Thông Tin ']||'',r['Địa Chỉ']||'',r['Mẫu']||'',r['Số Lượng ( Chai)']||0,
+      r['TG Nhập']||new Date().toLocaleString('vi-VN')
+    ]));
+    return ContentService.createTextOutput('{"ok":true}').setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({error:err.message})).setMimeType(ContentService.MimeType.JSON);
+  }
+}`;
+
+// ════════════════════════════════════════
+//  NAV
+// ════════════════════════════════════════
+function navTo(k) {
+  ST.scr = k; ST.page = 0; ST.srch = ''; ST.flt = 'all'; ST.mapInited = false;
+  render();
+  if (k === 'map') setTimeout(initMap, 200);
+}
+
+// ════════════════════════════════════════
+//  INIT — mount and bind based on state
+// ════════════════════════════════════════
+function init() {
+  render();
+  if (ST.user) bindApp();
+  else bindLogin();
+}
+
+// Re-bind after render
+const _origRender = render;
+window.render = function() {
+  _origRender();
+  if (ST.user) bindApp();
+  else bindLogin();
+};
+window.reScr = function() {
+  const el = document.getElementById('scr');
+  if (el) {
+    el.innerHTML = buildScr();
+    if (ST.scr === 'map') setTimeout(initMap, 200);
+    bindScr();
+  }
+};
+
+init();
+</script>
+</body>
+</html>
