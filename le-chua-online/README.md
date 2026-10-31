@@ -15,6 +15,7 @@
 1. Cài **Node.js** (bản LTS) từ https://nodejs.org
 2. Mở thư mục `le-chua-online`, sửa file `config.json`:
    - `templeName`, `slogan`, `couplet`: tên chùa, câu đối
+   - `buddhaImage` (tùy chọn): để trống thì dùng tượng Phật vẽ sẵn. Muốn dùng ảnh tượng Phật thật của chùa: chép ảnh **PNG nền trong suốt** (dọc, khoảng 800×1040) vào thư mục `public/`, rồi điền tên file, VD `"buddhaImage": "tuong-phat.png"`
    - `bank`: `bankCode` (VD: `MB`, `VCB`, `TCB`, `ACB`...), `accountNo`, `accountName` (viết HOA, không dấu)
    - `adminKey`: **đổi thành mật khẩu riêng của anh**
    - `items`: tên lễ, giá, thời gian hiển thị trên bàn thờ (phút)

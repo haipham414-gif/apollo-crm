@@ -31,7 +31,7 @@
   #roof p  { position:relative; top:44px; font-size:24px; color:#ffe6a8; letter-spacing:6px; }
 
   /* Hào quang + hoa sen trung tâm */
-  #halo { position:absolute; left:760px; top:170px; width:400px; height:400px; border-radius:50%;
+  #halo { position:absolute; left:780px; top:85px; width:360px; height:360px; border-radius:50%;
     background:radial-gradient(circle, rgba(255,230,140,.95) 0%, rgba(255,190,60,.55) 35%, rgba(255,150,0,.12) 62%, transparent 72%);
     animation:glow 4s ease-in-out infinite; }
   @keyframes glow { 50% { transform:scale(1.07); filter:brightness(1.2); } }
@@ -39,15 +39,17 @@
     background:repeating-conic-gradient(rgba(255,215,100,.18) 0 4deg, transparent 4deg 15deg); animation:spin 60s linear infinite;
     mask:radial-gradient(circle, #000 40%, transparent 70%); -webkit-mask:radial-gradient(circle, #000 40%, transparent 70%); }
   @keyframes spin { to { transform:rotate(360deg); } }
-  #lotus { position:absolute; left:810px; top:380px; }
-  #holy { position:absolute; left:760px; top:300px; width:400px; text-align:center; font-size:30px; color:#7a2a00; font-weight:700; letter-spacing:2px; }
+  /* Tượng Phật (SVG vẽ sẵn, hoặc ảnh thật nếu đặt buddhaImage trong config.json) */
+  #buddha { position:absolute; left:760px; top:140px; width:400px; height:520px; filter:drop-shadow(0 0 24px rgba(255,200,80,.55)); }
+  #buddha img { width:100%; height:100%; object-fit:contain; object-position:bottom; }
+  #holy { position:absolute; left:0; right:0; top:168px; text-align:center; font-size:26px; color:var(--gold); font-weight:700; letter-spacing:2px; z-index:1; text-shadow:0 2px 4px #000; }
 
   /* Câu đối hai bên */
   /* Câu đối chữ Quốc ngữ: mỗi chữ một dòng, đọc từ trên xuống */
-  .couplet { position:absolute; top:190px; width:96px; height:430px; text-align:center; line-height:1.55;
+  .couplet { position:absolute; top:190px; width:112px; height:430px; text-align:center; line-height:1.55;
     background:linear-gradient(#a3121299,#6d0a0a); border:3px solid var(--gold2); border-radius:6px; color:var(--gold);
     font-size:25px; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px #0008; }
-  #c1 { left:620px; } #c2 { left:1204px; }
+  #c1 { left:618px; } #c2 { left:1190px; }
 
   /* Bàn thờ */
   #altar { position:absolute; left:560px; top:640px; width:800px; height:300px; }
@@ -105,7 +107,8 @@
   @keyframes tick { to { transform:translateX(-100%); } }
 
   /* Thông báo lớn khi có người dâng lễ */
-  #announce { position:absolute; left:50%; top:180px; transform:translateX(-50%) scale(.5); opacity:0; z-index:50;
+  /* Đặt thông báo ở phía dưới để không che tượng Phật */
+  #announce { position:absolute; left:50%; top:660px; transform:translateX(-50%) scale(.5); opacity:0; z-index:50;
     min-width:900px; padding:30px 50px; text-align:center; border-radius:20px; pointer-events:none;
     background:radial-gradient(ellipse, #b31414, #5a0000); border:5px solid var(--gold); box-shadow:0 0 80px rgba(255,200,0,.7);
     transition:all .5s cubic-bezier(.2,1.4,.4,1); }
@@ -129,24 +132,102 @@
   </div>
 
   <div id="halo"><div class="rays"></div></div>
-  <div id="holy">Nam Mô Bổn Sư<br>Thích Ca Mâu Ni Phật</div>
-  <svg id="lotus" width="300" height="200" viewBox="0 0 300 200" aria-hidden="true">
-    <defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd1e0"/><stop offset="1" stop-color="#e0507a"/></linearGradient></defs>
-    <g fill="url(#pg)" stroke="#fff3" stroke-width="2">
-      <path d="M150 180 C60 170 20 120 30 90 C70 110 110 140 150 180Z"/>
-      <path d="M150 180 C240 170 280 120 270 90 C230 110 190 140 150 180Z"/>
-      <path d="M150 180 C90 150 70 90 90 50 C120 80 140 130 150 180Z"/>
-      <path d="M150 180 C210 150 230 90 210 50 C180 80 160 130 150 180Z"/>
-      <path d="M150 180 C125 130 130 60 150 20 C170 60 175 130 150 180Z"/>
+  <!-- Tượng Phật ngồi thiền trên tòa sen (vẽ bằng SVG) -->
+  <div id="buddha">
+  <svg viewBox="0 0 400 520" width="400" height="520" role="img" aria-label="Tượng Phật">
+    <defs>
+      <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#fff1b8"/><stop offset=".45" stop-color="#f2c14e"/><stop offset="1" stop-color="#b47c12"/>
+      </linearGradient>
+      <linearGradient id="robe" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#f6c45a"/><stop offset="1" stop-color="#c07d10"/>
+      </linearGradient>
+      <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#6b4a12"/><stop offset="1" stop-color="#8f6a1c"/>
+      </linearGradient>
+      <linearGradient id="petal" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#ffe0ea"/><stop offset="1" stop-color="#d9436e"/>
+      </linearGradient>
+      <radialGradient id="aura" cx=".5" cy=".5" r=".5">
+        <stop offset="0" stop-color="#fff6c8" stop-opacity=".9"/><stop offset=".6" stop-color="#ffcf55" stop-opacity=".35"/><stop offset="1" stop-color="#ff9d00" stop-opacity="0"/>
+      </radialGradient>
+      <pattern id="curls" width="9" height="9" patternUnits="userSpaceOnUse">
+        <circle cx="4.5" cy="4.5" r="3" fill="#7d5a16" stroke="#4e360a" stroke-width="1"/>
+      </pattern>
+    </defs>
+
+    <!-- Hào quang thân và đầu -->
+    <ellipse cx="200" cy="270" rx="185" ry="235" fill="url(#aura)"/>
+    <circle cx="200" cy="118" r="82" fill="url(#aura)" stroke="#ffe08a" stroke-width="3" stroke-opacity=".8"/>
+    <circle cx="200" cy="118" r="72" fill="none" stroke="#ffe08a" stroke-width="1.5" stroke-opacity=".6" stroke-dasharray="3 6"/>
+
+    <!-- Tòa sen: hàng cánh phía sau -->
+    <g fill="url(#petal)" stroke="#fff5" stroke-width="1.5">
+      <path d="M70 450 Q45 415 75 390 Q100 420 95 450Z"/><path d="M330 450 Q355 415 325 390 Q300 420 305 450Z"/>
+      <path d="M120 440 Q100 400 130 378 Q150 410 145 440Z"/><path d="M280 440 Q300 400 270 378 Q250 410 255 440Z"/>
     </g>
-    <ellipse cx="150" cy="185" rx="110" ry="14" fill="#2f7a3a"/>
+
+    <!-- Chân ngồi kiết già -->
+    <path d="M62 428 Q52 385 120 362 L280 362 Q348 385 338 428 Q200 452 62 428Z" fill="url(#robe)" stroke="#8a5a08" stroke-width="2"/>
+    <path d="M95 420 Q200 395 305 420 M120 400 Q200 380 280 400" stroke="#9a6a0c" stroke-width="2" fill="none" opacity=".7"/>
+
+    <!-- Thân -->
+    <path d="M132 212 Q200 192 268 212 Q302 232 302 285 L296 372 L104 372 L98 285 Q98 232 132 212Z" fill="url(#gold)" stroke="#8a5a08" stroke-width="2"/>
+    <!-- Áo cà sa vắt vai -->
+    <path d="M205 196 Q268 200 292 226 Q306 262 301 305 L297 374 L103 374 L101 334 Q150 305 172 255 Q188 218 205 196Z" fill="url(#robe)" stroke="#8a5a08" stroke-width="2"/>
+    <path d="M190 240 Q230 280 230 370 M215 222 Q260 260 265 370 M170 280 Q195 320 190 370" stroke="#9a6a0c" stroke-width="2" fill="none" opacity=".75"/>
+    <path d="M118 228 Q94 285 113 348 M283 228 Q306 285 287 348" stroke="#8a5a08" stroke-width="2" fill="none" opacity=".7"/>
+
+    <!-- Hai tay kết ấn thiền định -->
+    <path d="M138 362 Q200 334 262 362 Q200 388 138 362Z" fill="url(#gold)" stroke="#8a5a08" stroke-width="2"/>
+    <path d="M184 352 Q200 338 216 352" stroke="#8a5a08" stroke-width="2" fill="none"/>
+
+    <!-- Cổ (3 ngấn) -->
+    <path d="M182 168 L218 168 L222 202 Q200 210 178 202Z" fill="url(#gold)"/>
+    <path d="M184 182 Q200 187 216 182 M182 193 Q200 199 218 193" stroke="#a0700e" stroke-width="1.5" fill="none"/>
+
+    <!-- Tai dài -->
+    <path d="M154 98 Q136 102 140 135 Q142 162 157 168 Q162 140 158 110Z" fill="url(#gold)" stroke="#8a5a08" stroke-width="1.5"/>
+    <path d="M246 98 Q264 102 260 135 Q258 162 243 168 Q238 140 242 110Z" fill="url(#gold)" stroke="#8a5a08" stroke-width="1.5"/>
+
+    <!-- Mặt -->
+    <ellipse cx="200" cy="120" rx="47" ry="57" fill="url(#gold)" stroke="#8a5a08" stroke-width="2"/>
+
+    <!-- Tóc xoắn ốc + nhục kế -->
+    <path d="M152 112 Q148 60 200 56 Q252 60 248 112 Q228 90 200 92 Q172 90 152 112Z" fill="url(#curls)" stroke="#4e360a" stroke-width="1.5"/>
+    <ellipse cx="200" cy="56" rx="25" ry="20" fill="url(#curls)" stroke="#4e360a" stroke-width="1.5"/>
+    <path d="M200 22 Q210 34 206 42 L194 42 Q190 34 200 22Z" fill="#ffb020" stroke="#c07d10"/>
+
+    <!-- Nét mặt: mắt khép, miệng mỉm cười -->
+    <g stroke="#6b4508" stroke-width="2" fill="none" stroke-linecap="round">
+      <path d="M168 110 Q181 102 194 109"/><path d="M206 109 Q219 102 232 110"/>
+      <path d="M171 124 Q182 131 193 124"/><path d="M207 124 Q218 131 229 124"/>
+      <path d="M200 114 L196 140 Q200 144 205 140"/>
+      <path d="M188 154 Q200 161 212 154"/>
+    </g>
+    <circle cx="200" cy="101" r="2.6" fill="#c0392b"/>
+
+    <!-- Tòa sen: hàng cánh phía trước + đế -->
+    <g fill="url(#petal)" stroke="#fff6" stroke-width="1.5">
+      <path d="M48 478 Q22 448 52 418 Q78 448 74 478Z"/>
+      <path d="M96 482 Q70 446 100 414 Q128 446 122 482Z"/>
+      <path d="M148 486 Q124 446 150 410 Q178 446 172 486Z"/>
+      <path d="M200 488 Q176 446 200 408 Q224 446 200 488Z"/>
+      <path d="M252 486 Q276 446 250 410 Q222 446 228 486Z"/>
+      <path d="M304 482 Q330 446 300 414 Q272 446 278 482Z"/>
+      <path d="M352 478 Q378 448 348 418 Q322 448 326 478Z"/>
+    </g>
+    <ellipse cx="200" cy="492" rx="170" ry="16" fill="#2f7a3a" stroke="#1d5a28" stroke-width="2"/>
+    <rect x="60" y="494" width="280" height="22" rx="6" fill="url(#gold)" stroke="#8a5a08" stroke-width="2"/>
   </svg>
+  </div>
 
   <div class="couplet" id="c1"></div>
   <div class="couplet" id="c2"></div>
 
   <div id="altar">
     <div id="table"></div>
+    <div id="holy">Nam Mô Bổn Sư Thích Ca Mâu Ni Phật</div>
     <div id="sticks"></div>
     <div id="bowl"></div>
     <div class="zone" id="z-nhang"></div>
@@ -195,6 +276,10 @@ async function start() {
     text.split(/\s+/).forEach((w, i) => { if (i) el.append(document.createElement('br')); el.append(w); });
   }
   document.getElementById('qr').onerror = () => { document.getElementById('qrErr').style.display = 'block'; };
+  if (cfg.buddhaImage) {
+    const img = document.createElement('img'); img.src = cfg.buddhaImage; img.alt = 'Tượng Phật';
+    document.getElementById('buddha').replaceChildren(img);
+  }
   const note = cfg.transferPrefix + ' TEN CUA BAN';
   document.getElementById('qr').src = LC.qrUrl(0, note);
   document.getElementById('howto').innerHTML = 'Nội dung chuyển khoản:<br><b></b>';

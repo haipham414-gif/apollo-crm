@@ -109,8 +109,8 @@ function serveStatic(req, res, urlPath) {
 
 // Cấu hình công khai (KHÔNG gửi adminKey / webhookApiKey ra ngoài)
 function publicConfig() {
-  const { templeName, slogan, couplet, bank, transferPrefix, items } = config;
-  return { templeName, slogan, couplet, bank, transferPrefix, items };
+  const { templeName, slogan, couplet, buddhaImage, bank, transferPrefix, items } = config;
+  return { templeName, slogan, couplet, buddhaImage, bank, transferPrefix, items };
 }
 
 // ---------- Định tuyến ----------
