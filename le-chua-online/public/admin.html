@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quản trị - Lễ chùa online</title>
+<style>
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Segoe UI",Roboto,Arial,sans-serif; background:#1b1b1f; color:#eee; }
+  .wrap { max-width:1100px; margin:0 auto; padding:16px; }
+  h1 { color:#f5c542; font-size:22px; }
+  .cols { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:800px) { .cols { grid-template-columns:1fr; } }
+  .card { background:#26262c; border-radius:12px; padding:16px; margin-bottom:16px; }
+  h2 { font-size:17px; margin:0 0 10px; color:#f5c542; }
+  input, select { width:100%; padding:9px; border-radius:8px; border:1px solid #444; background:#111; color:#fff; font:inherit; margin-bottom:8px; }
+  button { padding:9px 14px; border:0; border-radius:8px; cursor:pointer; font:inherit; font-weight:600; background:#3a3a44; color:#fff; }
+  button.ok { background:#d4a017; color:#2a0000; }
+  button.del { background:#5a1a1a; padding:4px 10px; }
+  .quick { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  td, th { padding:6px; border-bottom:1px solid #333; text-align:left; vertical-align:top; }
+  .big { font-size:30px; color:#f5c542; font-weight:800; }
+  .muted { color:#999; font-size:13px; }
+  code { background:#111; padding:2px 6px; border-radius:4px; }
+  #login { max-width:360px; margin:80px auto; }
+</style>
+</head>
+<body>
+<div id="login" class="card">
+  <h2>🔐 Đăng nhập quản trị</h2>
+  <input id="key" type="password" placeholder="Mật khẩu (adminKey trong config.json)">
+  <button class="ok" onclick="login()">Vào</button>
+  <p id="loginErr" style="color:#f88"></p>
+</div>
+
+<div class="wrap" id="app" style="display:none">
+  <h1>🛕 Bảng điều khiển livestream</h1>
+  <div class="cols">
+    <div>
+      <div class="card">
+        <h2>💛 Ghi nhận công đức (khi thấy tiền về tài khoản)</h2>
+        <div class="quick" id="quick"></div>
+        <input id="fName" placeholder="Tên Phật tử" maxlength="40">
+        <select id="fItem"></select>
+        <input id="fAmount" type="number" placeholder="Số tiền" step="1000">
+        <input id="fWish" placeholder="Lời nguyện (tùy chọn)" maxlength="120">
+        <button class="ok" onclick="confirmManual()">✅ Xác nhận & phát lên live</button>
+        <button onclick="testFx()">✨ Thử hiệu ứng (không lưu)</button>
+      </div>
+
+      <div class="card">
+        <h2>⏳ Đơn đang chờ chuyển khoản (từ trang web)</h2>
+        <p class="muted">Đối chiếu mã trong nội dung chuyển khoản trên app ngân hàng rồi bấm xác nhận.</p>
+        <table id="orders"></table>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h2>📊 Tổng quan</h2>
+        <div class="big" id="total">0đ</div>
+        <div class="muted" id="count"></div>
+        <p class="muted" style="margin-top:12px">Link thêm vào OBS / TikTok Live Studio (Browser Source 1920×1080):<br>
+          <code id="ovl"></code><br>Link cho người xem: <code id="viewer"></code></p>
+        <button onclick="exportCSV()">⬇️ Xuất sổ công đức (Excel/CSV)</button>
+      </div>
+      <div class="card">
+        <h2>📜 Sổ công đức</h2>
+        <table id="list"></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+let KEY = localStorage.getItem('lc_admin') || '';
+let donations = [];
+
+async function api(path, body) {
+  const r = await fetch('/api/admin/' + path, {
+    method: body ? 'POST' : 'GET',
+    headers: { 'Content-Type': 'application/json', 'x-admin-key': KEY },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error);
+  return data;
+}
+
+async function login() {
+  KEY = document.getElementById('key').value || KEY;
+  try { await api('orders'); } catch (e) { document.getElementById('loginErr').textContent = e.message; return; }
+  localStorage.setItem('lc_admin', KEY);
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  init();
+}
+
+async function init() {
+  const cfg = await LC.loadConfig();
+  document.getElementById('ovl').textContent = location.origin + '/overlay.html';
+  document.getElementById('viewer').textContent = location.origin + '/';
+  const sel = document.getElementById('fItem'); const quick = document.getElementById('quick');
+  for (const it of cfg.items) {
+    const o = LC.el('option', '', `${it.name} (${it.price ? LC.vnd(it.price) : 'tùy tâm'})`); o.value = it.id; sel.append(o);
+    const b = LC.el('button', '', it.name);
+    b.onclick = () => { sel.value = it.id; if (it.price) document.getElementById('fAmount').value = it.price; };
+    quick.append(b);
+  }
+  sel.onchange = () => { const it = LC.item(sel.value); if (it.price) document.getElementById('fAmount').value = it.price; };
+  sel.onchange();
+  await refresh();
+  LC.listen({ donation: (p) => { if (!p.test) refresh(); }, refresh });
+  setInterval(loadOrders, 10000);
+}
+
+async function refresh() {
+  const st = await (await fetch('/api/state')).json();
+  donations = st.donations;
+  document.getElementById('total').textContent = LC.vnd(st.summary.total);
+  document.getElementById('count').textContent = st.summary.count + ' lượt dâng lễ';
+  const t = document.getElementById('list'); t.innerHTML = '<tr><th>Giờ</th><th>Tên</th><th>Lễ</th><th>Tiền</th><th></th></tr>';
+  for (const d of donations.slice().reverse()) {
+    const tr = LC.el('tr');
+    tr.append(LC.el('td', '', new Date(d.time).toLocaleTimeString('vi-VN')),
+      LC.el('td', '', d.name + (d.wish ? ' — “' + d.wish + '”' : '')),
+      LC.el('td', '', LC.item(d.itemId).name + (d.source === 'bank' ? ' 🏦' : '')),
+      LC.el('td', '', LC.vnd(d.amount)));
+    const td = LC.el('td'); const b = LC.el('button', 'del', 'Xóa');
+    b.onclick = async () => { if (confirm('Xóa dòng này khỏi sổ công đức?')) { await api('delete', { id: d.id }); refresh(); } };
+    td.append(b); tr.append(td); t.append(tr);
+  }
+  loadOrders();
+}
+
+async function loadOrders() {
+  const orders = await api('orders');
+  const t = document.getElementById('orders'); t.innerHTML = '';
+  if (!orders.length) t.innerHTML = '<tr><td class="muted">Không có đơn chờ</td></tr>';
+  for (const o of orders) {
+    const tr = LC.el('tr');
+    tr.append(LC.el('td', '', o.code), LC.el('td', '', o.name || 'Ẩn danh'), LC.el('td', '', `${LC.item(o.itemId).name} • ${LC.vnd(o.amount)}`));
+    const td = LC.el('td'); const b = LC.el('button', 'ok', 'Đã nhận tiền');
+    b.onclick = async () => { try { await api('confirm', { code: o.code }); } catch (e) { alert(e.message); } };
+    td.append(b); tr.append(td); t.append(tr);
+  }
+}
+
+async function confirmManual() {
+  const body = {
+    name: document.getElementById('fName').value,
+    itemId: document.getElementById('fItem').value,
+    amount: document.getElementById('fAmount').value,
+    wish: document.getElementById('fWish').value,
+  };
+  if (!(Number(body.amount) > 0)) return alert('Nhập số tiền');
+  try { await api('confirm', body); } catch (e) { return alert(e.message); }
+  document.getElementById('fName').value = ''; document.getElementById('fWish').value = '';
+}
+
+function testFx() { api('test', { itemId: document.getElementById('fItem').value }); }
+
+async function exportCSV() {
+  const all = await api('all');
+  const rows = [['Thời gian', 'Tên', 'Lễ', 'Số tiền', 'Lời nguyện', 'Nguồn']];
+  for (const d of all) rows.push([new Date(d.time).toLocaleString('vi-VN'), d.name, LC.item(d.itemId).name, d.amount, d.wish, d.source]);
+  const csv = '﻿' + rows.map(r => r.map(v => '"' + String(v ?? '').replace(/"/g, '""') + '"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = 'so-cong-duc.csv'; a.click();
+}
+
+if (KEY) login();
+</script>
+</body>
+</html>

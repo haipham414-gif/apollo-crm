@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Màn hình livestream - Lễ chùa online</title>
+<!--
+  Trang này dùng làm "Browser Source" trong OBS / TikTok Live Studio.
+  Kích thước khuyên dùng: 1920 x 1080.
+  Thêm ?transparent=1 vào URL nếu muốn nền trong suốt (chồng lên camera).
+-->
+<style>
+  :root { --gold:#f5c542; --gold2:#d4a017; --red:#7a0f0f; --wood:#4a1a0c; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { width:100%; height:100%; overflow:hidden; background:#000; font-family:"Segoe UI",Roboto,Arial,sans-serif; }
+  body.transparent { background:transparent; }
+
+  /* Sân khấu cố định 1920x1080, tự co giãn theo cửa sổ */
+  #stage { position:absolute; width:1920px; height:1080px; left:50%; top:50%; transform-origin:center; color:#fff;
+    background:
+      radial-gradient(ellipse at 50% 40%, rgba(255,190,80,.25), transparent 55%),
+      repeating-linear-gradient(45deg, rgba(245,197,66,.05) 0 2px, transparent 2px 28px),
+      repeating-linear-gradient(-45deg, rgba(245,197,66,.05) 0 2px, transparent 2px 28px),
+      linear-gradient(#3a0606, #1a0202 70%, #0d0101);
+  }
+  body.transparent #stage { background:transparent; }
+
+  /* Mái chùa */
+  #roof { position:absolute; top:0; left:0; right:0; height:150px; text-align:center; }
+  #roof svg { position:absolute; top:0; left:0; }
+  #roof h1 { position:relative; top:44px; font-size:54px; color:var(--gold); letter-spacing:3px; text-shadow:0 0 18px rgba(255,180,0,.6), 0 3px 0 #5a0000; }
+  #roof p  { position:relative; top:44px; font-size:24px; color:#ffe6a8; letter-spacing:6px; }
+
+  /* Hào quang + hoa sen trung tâm */
+  #halo { position:absolute; left:760px; top:170px; width:400px; height:400px; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,230,140,.95) 0%, rgba(255,190,60,.55) 35%, rgba(255,150,0,.12) 62%, transparent 72%);
+    animation:glow 4s ease-in-out infinite; }
+  @keyframes glow { 50% { transform:scale(1.07); filter:brightness(1.2); } }
+  #halo .rays { position:absolute; inset:-60px; border-radius:50%;
+    background:repeating-conic-gradient(rgba(255,215,100,.18) 0 4deg, transparent 4deg 15deg); animation:spin 60s linear infinite;
+    mask:radial-gradient(circle, #000 40%, transparent 70%); -webkit-mask:radial-gradient(circle, #000 40%, transparent 70%); }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  #lotus { position:absolute; left:810px; top:380px; }
+  #holy { position:absolute; left:760px; top:300px; width:400px; text-align:center; font-size:30px; color:#7a2a00; font-weight:700; letter-spacing:2px; }
+
+  /* Câu đối hai bên */
+  /* Câu đối chữ Quốc ngữ: mỗi chữ một dòng, đọc từ trên xuống */
+  .couplet { position:absolute; top:190px; width:96px; height:430px; text-align:center; line-height:1.55;
+    background:linear-gradient(#a3121299,#6d0a0a); border:3px solid var(--gold2); border-radius:6px; color:var(--gold);
+    font-size:25px; font-weight:700; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px #0008; }
+  #c1 { left:620px; } #c2 { left:1204px; }
+
+  /* Bàn thờ */
+  #altar { position:absolute; left:560px; top:640px; width:800px; height:300px; }
+  #table { position:absolute; left:0; right:0; top:120px; height:180px; border-radius:8px;
+    background:linear-gradient(#7a2a12, var(--wood)); border-top:10px solid var(--gold2); box-shadow:0 10px 40px #000a; }
+  #table::after { content:""; position:absolute; left:30px; right:30px; top:30px; bottom:30px; border:3px double var(--gold2); border-radius:6px; opacity:.6; }
+  .zone { position:absolute; display:flex; align-items:flex-end; justify-content:center; gap:4px; }
+  #z-qua  { left:10px;  top:40px;  width:230px; height:90px; }
+  #z-hoa  { right:10px; top:20px;  width:230px; height:110px; }
+  #z-nen  { left:120px; top:210px; width:560px; height:70px; z-index:2; }
+  #z-nhang{ left:300px; top:-30px; width:200px; height:160px; }
+  .zone .o { font-size:56px; filter:drop-shadow(0 4px 6px #000a); animation:pop .8s cubic-bezier(.2,1.6,.4,1); }
+  #z-nen .o { font-size:44px; animation:pop .8s cubic-bezier(.2,1.6,.4,1), flicker 1.6s infinite alternate; }
+  @keyframes pop { from { transform:scale(0) translateY(40px); opacity:0; } }
+  @keyframes flicker { 50% { filter:drop-shadow(0 0 12px #ffb300) brightness(1.15); } }
+
+  /* Bát hương + nén nhang + khói */
+  #bowl { position:absolute; left:330px; top:95px; width:140px; height:60px; border-radius:0 0 70px 70px;
+    background:linear-gradient(#f0c040,#9c6f00); border-top:8px solid #ffd966; z-index:1; box-shadow:0 6px 16px #000a; }
+  #sticks { position:absolute; left:340px; top:-40px; width:120px; height:140px; }
+  .stick { position:absolute; bottom:0; width:4px; background:linear-gradient(#e0b080 0 85%, #b5532c 85%); border-radius:2px; transform-origin:bottom center; }
+  .stick::before { content:""; position:absolute; top:-3px; left:-2px; width:8px; height:8px; border-radius:50%; background:#ff6a00; box-shadow:0 0 10px 3px #ff8c00; animation:ember 1.2s infinite alternate; }
+  @keyframes ember { to { box-shadow:0 0 16px 6px #ffb300; } }
+  .smoke { position:absolute; top:-10px; left:-6px; width:16px; height:16px; border-radius:50%; background:rgba(220,220,220,.35); filter:blur(4px);
+    animation:smoke 5s linear infinite; }
+  @keyframes smoke { 0% { transform:translate(0,0) scale(.6); opacity:0; } 15% { opacity:.7; }
+    100% { transform:translate(var(--dx,20px), -260px) scale(3.5); opacity:0; } }
+
+  /* Khung bên trái: lễ vừa dâng */
+  .panel { position:absolute; top:180px; width:440px; height:760px; border-radius:16px; padding:22px;
+    background:linear-gradient(rgba(60,8,8,.92), rgba(30,4,4,.92)); border:3px solid var(--gold2); box-shadow:0 0 30px #000c; }
+  .panel h2 { color:var(--gold); font-size:30px; text-align:center; margin-bottom:16px; border-bottom:2px solid #d4a01755; padding-bottom:10px; }
+  #left { left:40px; }
+  #right { right:40px; text-align:center; }
+  #feed .row { display:flex; gap:12px; align-items:center; padding:10px 6px; border-bottom:1px dashed #d4a01733; animation:slide .6s ease-out; }
+  @keyframes slide { from { transform:translateX(-40px); opacity:0; } }
+  #feed .ic { width:52px; text-align:center; flex:none; }
+  #feed .nm { font-size:24px; font-weight:700; color:#ffe6a8; }
+  #feed .it { font-size:19px; color:#ffcc66; }
+  #feed .ws { font-size:18px; color:#ddd; font-style:italic; }
+
+  /* Khung bên phải: QR + bảng vàng */
+  #qr { width:260px; height:260px; background:#fff; border-radius:12px; padding:8px; margin:0 auto; display:block; }
+  #howto { font-size:21px; margin:12px 0 6px; color:#ffe6a8; line-height:1.4; }
+  #howto b { color:var(--gold); font-size:26px; }
+  #top .row { display:flex; justify-content:space-between; font-size:22px; padding:5px 10px; }
+  #top .row:nth-child(1) { color:#ffd700; font-weight:700; font-size:25px; }
+  #top .row:nth-child(2) { color:#e8e8e8; } #top .row:nth-child(3) { color:#e3a46b; }
+
+  /* Thanh tổng công đức dưới cùng */
+  #bar { position:absolute; left:0; right:0; bottom:0; height:80px; background:linear-gradient(90deg,#5a0000,#8a1010,#5a0000);
+    border-top:4px solid var(--gold2); display:flex; align-items:center; overflow:hidden; }
+  #total { flex:none; padding:0 30px; height:100%; display:flex; align-items:center; background:#3a0000; font-size:28px; color:var(--gold); font-weight:700; border-right:3px solid var(--gold2); }
+  #ticker { white-space:nowrap; font-size:26px; color:#ffe6a8; animation:tick 40s linear infinite; padding-left:100%; }
+  @keyframes tick { to { transform:translateX(-100%); } }
+
+  /* Thông báo lớn khi có người dâng lễ */
+  #announce { position:absolute; left:50%; top:180px; transform:translateX(-50%) scale(.5); opacity:0; z-index:50;
+    min-width:900px; padding:30px 50px; text-align:center; border-radius:20px; pointer-events:none;
+    background:radial-gradient(ellipse, #b31414, #5a0000); border:5px solid var(--gold); box-shadow:0 0 80px rgba(255,200,0,.7);
+    transition:all .5s cubic-bezier(.2,1.4,.4,1); }
+  #announce.show { opacity:1; transform:translateX(-50%) scale(1); }
+  #announce .a1 { font-size:34px; color:#ffe6a8; }
+  #announce .a2 { font-size:56px; font-weight:800; color:var(--gold); text-shadow:0 0 20px #ff0; margin:6px 0; }
+  #announce .a3 { font-size:30px; color:#fff; font-style:italic; }
+  .petal { position:absolute; top:-40px; font-size:36px; z-index:40; animation:fall linear forwards; pointer-events:none; }
+  @keyframes fall { to { transform:translateY(1150px) rotate(540deg); } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="roof">
+    <svg width="1920" height="150" viewBox="0 0 1920 150" aria-hidden="true">
+      <path d="M0 30 Q960 -20 1920 30 L1920 60 Q960 10 0 60Z" fill="#8a1010" stroke="#d4a017" stroke-width="4"/>
+      <path d="M60 30 Q20 30 0 0 M1860 30 Q1900 30 1920 0" stroke="#d4a017" stroke-width="6" fill="none"/>
+    </svg>
+    <h1 id="templeName">Chùa</h1>
+    <p id="slogan"></p>
+  </div>
+
+  <div id="halo"><div class="rays"></div></div>
+  <div id="holy">Nam Mô Bổn Sư<br>Thích Ca Mâu Ni Phật</div>
+  <svg id="lotus" width="300" height="200" viewBox="0 0 300 200" aria-hidden="true">
+    <defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd1e0"/><stop offset="1" stop-color="#e0507a"/></linearGradient></defs>
+    <g fill="url(#pg)" stroke="#fff3" stroke-width="2">
+      <path d="M150 180 C60 170 20 120 30 90 C70 110 110 140 150 180Z"/>
+      <path d="M150 180 C240 170 280 120 270 90 C230 110 190 140 150 180Z"/>
+      <path d="M150 180 C90 150 70 90 90 50 C120 80 140 130 150 180Z"/>
+      <path d="M150 180 C210 150 230 90 210 50 C180 80 160 130 150 180Z"/>
+      <path d="M150 180 C125 130 130 60 150 20 C170 60 175 130 150 180Z"/>
+    </g>
+    <ellipse cx="150" cy="185" rx="110" ry="14" fill="#2f7a3a"/>
+  </svg>
+
+  <div class="couplet" id="c1"></div>
+  <div class="couplet" id="c2"></div>
+
+  <div id="altar">
+    <div id="table"></div>
+    <div id="sticks"></div>
+    <div id="bowl"></div>
+    <div class="zone" id="z-nhang"></div>
+    <div class="zone" id="z-qua"></div>
+    <div class="zone" id="z-hoa"></div>
+    <div class="zone" id="z-nen"></div>
+  </div>
+
+  <div class="panel" id="left">
+    <h2>🙏 Lễ vừa dâng</h2>
+    <div id="feed"></div>
+  </div>
+
+  <div class="panel" id="right">
+    <h2>💛 Quét mã công đức</h2>
+    <img id="qr" alt="QR công đức">
+    <div id="qrErr" style="display:none;color:#ffb3b3;font-size:18px">Không tải được mã QR — kiểm tra mạng / thông tin ngân hàng trong config.json</div>
+    <div id="howto"></div>
+    <h2 style="margin-top:14px">🏆 Bảng vàng công đức</h2>
+    <div id="top"></div>
+  </div>
+
+  <div id="bar"><div id="total">Tổng công đức: 0đ</div><div id="ticker"></div></div>
+
+  <div id="announce"><div class="a1"></div><div class="a2"></div><div class="a3"></div></div>
+</div>
+
+<script src="common.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+if (params.get('transparent')) document.body.classList.add('transparent');
+const stage = document.getElementById('stage');
+function fit() { const s = Math.min(innerWidth / 1920, innerHeight / 1080); stage.style.transform = `translate(-50%,-50%) scale(${s})`; }
+addEventListener('resize', fit); fit();
+
+let donations = [];          // danh sách đã xác nhận (để vẽ bàn thờ)
+const queue = [];            // hàng đợi thông báo (tránh chồng chéo khi nhiều người dâng cùng lúc)
+let showing = false;
+
+async function start() {
+  const cfg = await LC.loadConfig();
+  document.getElementById('templeName').textContent = '🛕 ' + cfg.templeName + ' 🛕';
+  document.getElementById('slogan').textContent = cfg.slogan;
+  for (const [id, text] of [['c1', cfg.couplet[0]], ['c2', cfg.couplet[1]]]) {
+    const el = document.getElementById(id);
+    text.split(/\s+/).forEach((w, i) => { if (i) el.append(document.createElement('br')); el.append(w); });
+  }
+  document.getElementById('qr').onerror = () => { document.getElementById('qrErr').style.display = 'block'; };
+  const note = cfg.transferPrefix + ' TEN CUA BAN';
+  document.getElementById('qr').src = LC.qrUrl(0, note);
+  document.getElementById('howto').innerHTML = 'Nội dung chuyển khoản:<br><b></b>';
+  document.querySelector('#howto b').textContent = note;
+
+  const st = await (await fetch('/api/state')).json();
+  donations = st.donations;
+  renderAll(st.summary);
+
+  LC.listen({
+    donation: ({ donation, summary, test }) => {
+      if (!test) donations.push(donation);
+      else donations.push({ ...donation, _test: true });
+      renderAll(summary);
+      queue.push(donation); nextAnnounce();
+    },
+    refresh: async () => { const s = await (await fetch('/api/state')).json(); donations = s.donations; renderAll(s.summary); },
+  });
+  setInterval(renderAltar, 10000); // nhang tàn dần theo thời gian
+}
+
+function renderAll(summary) {
+  renderAltar(); renderFeed(); renderTop(summary);
+}
+
+// ---- Bàn thờ: hiển thị lễ còn "hiệu lực" (chưa hết thời gian) ----
+function renderAltar() {
+  const now = Date.now();
+  const zones = { nhang: [], nen: [], hoa: [], qua: [] };
+  for (const d of donations) {
+    const item = LC.item(d.itemId);
+    if (!item.minutes || now - d.time > item.minutes * 60000) continue;
+    for (const z of item.adds) zones[z].push({ d, item, left: 1 - (now - d.time) / (item.minutes * 60000) });
+  }
+  // Nhang: mỗi lễ = 3 nén, tối đa 21 nén trong bát hương
+  const sticks = document.getElementById('sticks');
+  const list = zones.nhang.slice(-7);
+  if (sticks.dataset.key !== list.map(x => x.d.id + Math.round(x.left * 20)).join()) {
+    sticks.dataset.key = list.map(x => x.d.id + Math.round(x.left * 20)).join();
+    sticks.innerHTML = '';
+    let i = 0; const total = list.length * 3;
+    for (const x of list) for (let k = 0; k < 3; k++, i++) {
+      const s = document.createElement('div'); s.className = 'stick';
+      const pos = total === 1 ? 58 : 8 + (i / Math.max(1, total - 1)) * 104;
+      s.style.left = pos + 'px';
+      s.style.height = (40 + 100 * Math.max(.15, x.left)) + 'px';
+      s.style.transform = `rotate(${(pos - 60) / 5}deg)`;
+      for (let j = 0; j < 2; j++) {
+        const sm = document.createElement('div'); sm.className = 'smoke';
+        sm.style.animationDelay = (Math.random() * 5) + 's';
+        sm.style.setProperty('--dx', (Math.random() * 60 - 30) + 'px');
+        s.appendChild(sm);
+      }
+      sticks.appendChild(s);
+    }
+  }
+  const limits = { qua: 4, hoa: 3, nen: 9 };
+  for (const z of ['qua', 'hoa', 'nen']) {
+    const el = document.getElementById('z-' + z);
+    const items = zones[z].slice(-limits[z]);
+    const key = items.map(x => x.d.id).join();
+    if (el.dataset.key === key) continue;
+    el.dataset.key = key; el.innerHTML = '';
+    for (const x of items) {
+      const o = LC.el('span', 'o', z === 'qua' ? '🍊' : z === 'hoa' ? '🪷' : '🕯️');
+      if (z === 'qua') o.textContent = ['🍊', '🍌', '🍎', '🍑', '🍇'][x.d.id.charCodeAt(0) % 5];
+      el.appendChild(o);
+    }
+  }
+}
+
+function renderFeed() {
+  const feed = document.getElementById('feed'); feed.innerHTML = '';
+  for (const d of donations.slice(-6).reverse()) {
+    const item = LC.item(d.itemId);
+    const row = LC.el('div', 'row');
+    const ic = LC.el('div', 'ic'); ic.innerHTML = LC.icon(item, 46);
+    const txt = LC.el('div');
+    txt.append(LC.el('div', 'nm', d.name), LC.el('div', 'it', `${item.name} • ${LC.vnd(d.amount)}`));
+    if (d.wish) txt.append(LC.el('div', 'ws', '“' + d.wish + '”'));
+    row.append(ic, txt); feed.append(row);
+  }
+  const real = donations.filter(d => !d._test);
+  document.getElementById('ticker').textContent = real.length
+    ? real.slice(-15).reverse().map(d => `🙏 ${d.name} — ${LC.item(d.itemId).name}${d.wish ? ': “' + d.wish + '”' : ''}`).join('      ✦      ')
+    : '🙏 Kính mời quý Phật tử quét mã QR để dâng hương, dâng lễ và gieo duyên công đức 🙏';
+}
+
+function renderTop(summary) {
+  document.getElementById('total').textContent = 'Tổng công đức: ' + LC.vnd(summary.total);
+  const top = document.getElementById('top'); top.innerHTML = '';
+  const medals = ['🥇', '🥈', '🥉', '4.', '5.'];
+  summary.top.forEach((t, i) => {
+    const r = LC.el('div', 'row');
+    r.append(LC.el('span', '', `${medals[i]} ${t.name}`), LC.el('span', '', LC.vnd(t.amount)));
+    top.append(r);
+  });
+  if (!summary.top.length) top.append(LC.el('div', 'row', 'Chưa có — hãy là người đầu tiên 🙏'));
+}
+
+// ---- Thông báo lớn + chuông + hoa rơi ----
+function nextAnnounce() {
+  if (showing || !queue.length) return;
+  showing = true;
+  const d = queue.shift(); const item = LC.item(d.itemId);
+  const box = document.getElementById('announce');
+  box.querySelector('.a1').textContent = `Phật tử ${d.name} thành tâm dâng`;
+  box.querySelector('.a2').textContent = `${item.name} — ${LC.vnd(d.amount)}`;
+  box.querySelector('.a3').textContent = d.wish ? '“' + d.wish + '”' : 'Nguyện cầu bình an, vạn sự cát tường';
+  box.classList.add('show');
+  LC.bell(0.6);
+  for (let i = 0; i < 25; i++) {
+    const p = LC.el('div', 'petal', ['🌸', '🪷', '✨', '🌼'][i % 4]);
+    p.style.left = Math.random() * 1920 + 'px';
+    p.style.animationDuration = (4 + Math.random() * 4) + 's';
+    p.style.animationDelay = Math.random() * 2 + 's';
+    stage.appendChild(p); setTimeout(() => p.remove(), 11000);
+  }
+  setTimeout(() => { box.classList.remove('show'); setTimeout(() => { showing = false; nextAnnounce(); }, 700); }, 6000);
+}
+
+start();
+</script>
+</body>
+</html>

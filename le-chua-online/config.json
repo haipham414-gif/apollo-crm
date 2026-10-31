@@ -1,0 +1,25 @@
+{
+  "port": 3000,
+  "templeName": "Chùa An Lạc Online",
+  "slogan": "Nam Mô A Di Đà Phật",
+  "couplet": ["Tâm thành dâng nén hương thơm", "Nguyện cầu gia đạo bình an"],
+
+  "bank": {
+    "bankCode": "MB",
+    "accountNo": "0000000000",
+    "accountName": "NGUYEN VAN A"
+  },
+  "transferPrefix": "CD",
+
+  "adminKey": "doi-mat-khau-nay",
+  "webhookApiKey": "",
+
+  "items": [
+    { "id": "nhang",  "name": "3 nén nhang",          "price": 10000,  "icon": "nhang", "minutes": 10, "adds": ["nhang"] },
+    { "id": "nen",    "name": "Đèn cầu an",           "price": 20000,  "icon": "🕯️",   "minutes": 30, "adds": ["nen"] },
+    { "id": "hoa",    "name": "Bình hoa sen",         "price": 30000,  "icon": "🪷",    "minutes": 30, "adds": ["hoa"] },
+    { "id": "qua",    "name": "Mâm ngũ quả",          "price": 50000,  "icon": "🍊",    "minutes": 30, "adds": ["qua"] },
+    { "id": "tron",   "name": "Lễ cầu an trọn gói",   "price": 200000, "icon": "🙏",    "minutes": 60, "adds": ["nhang", "nen", "hoa", "qua"] },
+    { "id": "congduc","name": "Công đức tùy tâm",     "price": 0,      "icon": "💛",    "minutes": 0,  "adds": [] }
+  ]
+}
